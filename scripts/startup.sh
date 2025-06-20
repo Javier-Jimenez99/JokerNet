@@ -37,14 +37,6 @@ mkdir -p "$XDG_RUNTIME_DIR"
 modprobe uinput 2>/dev/null || true
 chmod 666 /dev/uinput 2>/dev/null || true
 
-# Test uinput functionality
-echo "🧪 Testing uinput functionality..."
-if [[ -f "/usr/local/bin/test_uinput.py" ]]; then
-    python3 /usr/local/bin/test_uinput.py || echo "⚠️ uinput tests failed - continuing anyway"
-else
-    echo "⚠️ uinput test script not found"
-fi
-
 # Download game if credentials provided
 if [[ -n "${STEAM_USER:-}" && -n "${STEAM_PASS:-}" && ! -f "$STEAM_ROOT/steamapps/appmanifest_2379780.acf" ]]; then
     echo "⬇️ Downloading Balatro..."

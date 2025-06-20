@@ -25,7 +25,9 @@ RUN apt-get update && apt-get install -y \
     libudev-dev \
     build-essential \
     wmctrl \
-    x11-utils
+    x11-utils \
+    kmod \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install Love2D and luasocket for mods
 RUN add-apt-repository ppa:bartbes/love-stable -y && \

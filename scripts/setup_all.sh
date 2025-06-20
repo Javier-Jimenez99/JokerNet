@@ -82,17 +82,38 @@ echo "LOVELY_MODS_DIR=$LOVELY_MODS_DIR" >> /etc/environment
 
 # Setup uinput for virtual input devices
 echo "🎮 Setting up uinput for virtual input devices..."
-if ! lsmod | grep -q uinput; then
-    echo "⚠️ Loading uinput kernel module..."
-    modprobe uinput || echo "⚠️ Could not load uinput module (may need privileged container)"
+
+# Check if uinput module is loaded (only if tools are available)
+if command -v lsmod >/dev/null 2>&1; then
+    if ! lsmod | grep -q uinput; then
+        echo "⚠️ uinput module not loaded"
+        if command -v modprobe >/dev/null 2>&1; then
+            echo "⚠️ Attempting to load uinput module..."
+            modprobe uinput 2>/dev/null || echo "⚠️ Could not load uinput module (may need privileged container)"
+        else
+            echo "⚠️ modprobe not available - relying on host kernel"
+        fi
+    else
+        echo "✅ uinput module is loaded"
+    fi
+else
+    echo "⚠️ lsmod not available - assuming uinput is available from host"
 fi
 
-# Set uinput permissions
+# Check if uinput device exists and set permissions
 if [[ -e /dev/uinput ]]; then
     chmod 666 /dev/uinput
-    echo "✅ uinput permissions configured"
+    echo "✅ uinput device found and permissions configured"
 else
-    echo "⚠️ /dev/uinput not found - virtual input may not work"
+    echo "⚠️ /dev/uinput not found - ensure it's mounted from host"
+    echo "⚠️ Run: docker run --device=/dev/uinput:/dev/uinput --privileged"
+fi
+
+# Check if /dev/input exists for gamepad detection
+if [[ -d /dev/input ]]; then
+    echo "✅ /dev/input directory found"
+else
+    echo "⚠️ /dev/input not found - ensure it's mounted from host"
 fi
 
 echo "✅ Setup complete - Mods: $(ls -1 "$LOVELY_MODS_DIR" | wc -l) installed"
