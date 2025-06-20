@@ -98,16 +98,12 @@ class BalatroGamepadController:
             return False
     
     def press_button(self, button_name: str, duration: float = 0.1):
-        """Press gamepad button with fallback: native uinput -> keyboard"""
+        """Press gamepad button using native uinput"""
         
-        # Try native uinput first
-        if self.native_gamepad:
-            result = self._press_button_native(button_name, duration)
-            if result["status"] == "success":
-                return result
+        if not self.native_gamepad:
+            return {"status": "error", "message": "Native gamepad not available"}
         
-        # Fallback to keyboard
-        return self._press_button_keyboard(button_name, duration)
+        return self._press_button_native(button_name, duration)
     
     def _press_button_native(self, button_name: str, duration: float):
         """Press button with native gamepad"""
@@ -161,45 +157,6 @@ class BalatroGamepadController:
             
         except Exception as e:
             return {"status": "error", "message": f"Native gamepad error: {e}"}
-    
-    def _press_button_keyboard(self, button_name: str, duration: float):
-        """Keyboard fallback for button presses"""
-        try:
-            key_map = {
-                'A': uinput.KEY_SPACE,
-                'B': uinput.KEY_ESC,
-                'X': uinput.KEY_X,
-                'Y': uinput.KEY_Y,
-                'START': uinput.KEY_ENTER,
-                'BACK': uinput.KEY_TAB,
-                'DPAD_UP': uinput.KEY_UP,
-                'DPAD_DOWN': uinput.KEY_DOWN,
-                'DPAD_LEFT': uinput.KEY_LEFT,
-                'DPAD_RIGHT': uinput.KEY_RIGHT,
-                'LB': uinput.KEY_Q,
-                'RB': uinput.KEY_E,
-            }
-            
-            key = key_map.get(button_name.upper())
-            if not key:
-                return {"status": "error", "message": f"Button '{button_name}' has no keyboard mapping"}
-            
-            self.focus_balatro_window()
-            
-            events = [key]
-            with uinput.Device(events, name="BalatroKeyboard") as kbd:
-                kbd.emit_click(key)
-                time.sleep(duration)
-            
-            return {
-                "status": "success",
-                "message": f"Button {button_name} sent as keyboard",
-                "method": "keyboard_fallback"
-            }
-            
-        except Exception as e:
-            return {"status": "error", "message": f"Keyboard fallback error: {e}"}
-
 # Load configuration from file
 def load_config():
     config = {}

@@ -5,9 +5,8 @@ Minimal API for controlling Balatro with virtual gamepad inputs in Docker.
 ## Features
 
 - **Virtual Gamepad Control**: Send gamepad button presses to Balatro running in Docker
-- **Multiple Input Fallbacks**: Native uinput → vgamepad → keyboard fallback for reliability
+- **Native uinput Integration**: Direct Xbox gamepad device emulation through Linux kernel
 - **Window Focus Management**: Automatically focuses Balatro window for input delivery
-- **Event Logging**: Receive events from BalatroLogger mod
 - **Minimal Setup**: Clean, production-ready configuration
 
 ## Prerequisites (Host Setup)
@@ -74,8 +73,6 @@ These commands are required because:
 | `/gamepad/button` | POST | Press gamepad button |
 | `/start_balatro` | POST | Start Balatro with mods |
 | `/stop_balatro` | POST | Stop Balatro |
-| `/logger/status` | GET | Logger events status |
-| `/status` | GET | System status |
 | `/health` | GET | Health check |
 
 ## Supported Buttons
@@ -87,9 +84,9 @@ These commands are required because:
 
 ## Input System
 
-The controller uses **native uinput** to create a virtual Xbox gamepad device directly through the Linux kernel. This provides the most reliable gamepad input for Balatro.
+The controller uses **native uinput exclusively** to create a virtual Xbox gamepad device directly through the Linux kernel. This provides the most reliable and authentic gamepad input for Balatro.
 
-**Fallback**: If uinput fails, the system falls back to keyboard input mapping.
+**No fallbacks**: The system requires a working uinput device - if uinput fails, gamepad input will not work.
 
 ## Requirements
 
