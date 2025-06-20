@@ -1,10 +1,11 @@
-# Balatro Gamepad Controller
+# Balatro Auto-Start Controller
 
-Minimal API for controlling Balatro with virtual gamepad inputs in Docker.
+Minimal API for controlling Balatro with virtual gamepad inputs and auto-starting games in Docker.
 
 ## Features
 
 - **Virtual Gamepad Control**: Send gamepad button presses to Balatro running in Docker
+- **Auto-Start Games**: Automatically start games with specific deck/stake configuration
 - **Native uinput Integration**: Direct Xbox gamepad device emulation through Linux kernel
 - **Window Focus Management**: Automatically focuses Balatro window for input delivery
 - **Minimal Setup**: Clean, production-ready configuration
@@ -72,6 +73,72 @@ These commands are required because:
    curl "http://localhost:8000/screenshot" > screenshot.png
    ```
 
+5. **Auto-start game with configuration**:
+   ```bash
+   # Iniciar con configuración básica (mazo y apuesta predeterminados)
+   curl -X POST "http://localhost:8000/auto_start" \
+        -H "Content-Type: application/json" \
+        -d '{"auto_start": true}'
+   
+   # Iniciar con mazo específico
+   curl -X POST "http://localhost:8000/auto_start" \
+        -H "Content-Type: application/json" \
+        -d '{"auto_start": true, "deck": "b_blue"}'
+   
+   # Iniciar con configuración completa
+   curl -X POST "http://localhost:8000/auto_start" \
+        -H "Content-Type: application/json" \
+        -d '{"auto_start": true, "deck": "b_magic", "stake": 5, "seed": "MYSTICAL2024"}'
+   
+   # Iniciar con semilla aleatoria
+   curl -X POST "http://localhost:8000/auto_start" \
+        -H "Content-Type: application/json" \
+        -d '{"auto_start": true, "deck": "b_nebula", "stake": 2, "seed": "random"}'
+   
+   # Verificar estado del mod
+   curl "http://localhost:8000/mod_status"
+   ```
+
+## Auto-Start Configuration Options
+
+| Parámetro | Tipo | Requerido | Descripción |
+|-----------|------|-----------|-------------|
+| `auto_start` | boolean | ✅ | Activar el auto-inicio |
+| `deck` | string | ❌ | ID del mazo (ej: "b_red", "b_blue", "b_magic") |
+| `stake` | number | ❌ | Nivel de apuesta (1-8, donde 1=Blanca, 8=Dorada) |
+| `seed` | string | ❌ | Semilla personalizada o "random" |
+
+### Mazos Disponibles
+- `b_red` - Mazo Rojo (predeterminado)
+- `b_blue` - Mazo Azul
+- `b_yellow` - Mazo Amarillo
+- `b_green` - Mazo Verde
+- `b_black` - Mazo Negro
+- `b_magic` - Mazo Mágico
+- `b_nebula` - Mazo Nebulosa
+- `b_ghost` - Mazo Fantasma
+- `b_abandoned` - Mazo Abandonado
+- `b_checkered` - Mazo Ajedrezado
+- `b_zodiac` - Mazo Zodiaco
+- `b_painted` - Mazo Pintado
+- `b_anaglyph` - Mazo Anaglifo
+- `b_plasma` - Mazo Plasma
+- `b_erratic` - Mazo Errático
+
+**Nota**: Solo funcionan mazos desbloqueados en el juego.
+
+### Apuestas (Stakes)
+1. **Apuesta Blanca** (más fácil)
+2. **Apuesta Roja**
+3. **Apuesta Verde**
+4. **Apuesta Negra**
+5. **Apuesta Azul**
+6. **Apuesta Púrpura**
+7. **Apuesta Naranja**
+8. **Apuesta Dorada** (más difícil)
+
+**Nota**: Solo funcionan apuestas desbloqueadas en el juego.
+
 ## API Endpoints
 
 | Endpoint | Method | Description |
@@ -79,6 +146,8 @@ These commands are required because:
 | `/gamepad/button` | POST | Press gamepad button |
 | `/start_balatro` | POST | Start Balatro with mods |
 | `/stop_balatro` | POST | Stop Balatro |
+| `/auto_start` | POST | Auto-start game with config |
+| `/mod_status` | GET | Get mod status |
 | `/screenshot` | GET | Take a screenshot of the game |
 | `/health` | GET | Health check |
 

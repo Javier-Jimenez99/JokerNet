@@ -55,7 +55,7 @@ COPY config/supervisord.conf /config/supervisord.conf
 # Make scripts executable
 RUN chmod +x /usr/local/bin/*.sh
 
-# Copy BalatroLogger mod
+# Copy Auto Start Game mod
 COPY BalatroLogger /BalatroLogger
 
 # Create necessary directories

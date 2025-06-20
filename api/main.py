@@ -198,6 +198,11 @@ class GamepadButtonRequest(BaseModel):
     button: str
     duration: Optional[float] = 0.1
 
+class AutoStartRequest(BaseModel):
+    deck: Optional[str] = "b_red"
+    stake: Optional[int] = 1
+    seed: Optional[str] = None
+
 # Global state
 balatro_running = False
 
@@ -290,6 +295,37 @@ async def press_gamepad_button(request: GamepadButtonRequest):
     
     return result
 
+@app.post("/auto_start")
+async def auto_start_game(request: AutoStartRequest):
+    """Configure and trigger auto-start"""
+    try:
+        import json
+        config = {
+            "auto_start": True,
+            "deck": request.deck,
+            "stake": request.stake,
+            "seed": request.seed if request.seed else "random"
+        }
+        
+        with open("/tmp/balatro_auto_start.json", "w") as f:
+            json.dump(config, f)
+        
+        return {"status": "configured", "config": config}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error: {e}")
+
+@app.get("/mod_status")
+async def get_mod_status():
+    """Get mod status"""
+    try:
+        import json
+        with open("/tmp/balatro_mod_status.json", "r") as f:
+            return json.load(f)
+    except FileNotFoundError:
+        return {"status": "no_status"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error: {e}")
+
 @app.get("/health")
 async def health_check():
     """Health check"""
@@ -305,6 +341,8 @@ async def root():
         "endpoints": {
             "start_game": "/start_balatro",
             "stop_game": "/stop_balatro",
+            "auto_start": "/auto_start",
+            "mod_status": "/mod_status",
             "gamepad_button": "/gamepad/button",
             "screenshot": "/screenshot",
             "health": "/health"
