@@ -1,0 +1,22 @@
+{
+    "id": "BalatroLogger",
+    "name": "Balatro Logger",
+    "author": [
+        "JokerNet"
+    ],
+    "description": "Registra el estado de la partida y lo envía a una API externa para análisis.",
+    "prefix": "blgr",
+    "main_file": "main.lua",
+    "version": "2.0.0",
+    "min_game_version": "1.0.1",
+    "dependencies": [],
+    "badge_colour": [
+        0.2,
+        0.7,
+        0.9,
+        1
+    ],
+    "provides": [
+        "BalatroLogger"
+    ]
+}

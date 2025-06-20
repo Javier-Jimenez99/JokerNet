@@ -1,0 +1,16 @@
+# Datos de Steam (credenciales sensibles)
+data/steam/
+
+# Variables de entorno
+.env
+
+# Docker
+.dockerignore
+
+# Logs
+*.log
+logs/
+
+# Archivos temporales
+*.tmp
+*.temp
