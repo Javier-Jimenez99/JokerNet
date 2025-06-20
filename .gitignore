@@ -1,5 +1,5 @@
 # Datos de Steam (credenciales sensibles)
-data/steam/
+data/steam/*
 
 # Variables de entorno
 .env
