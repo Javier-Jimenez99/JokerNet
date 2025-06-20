@@ -4,10 +4,11 @@ ENV DEBIAN_FRONTEND=noninteractive \
     DISPLAY=:1 \
     GAME_SPEED=16
 
-# Instalar dependencias del sistema
+# Install minimal system dependencies
 RUN apt-get update && apt-get install -y \
     python3 \
     python3-pip \
+    python3-dev \
     wget \
     curl \
     unzip \
@@ -20,50 +21,50 @@ RUN apt-get update && apt-get install -y \
     bsdmainutils \
     p7zip-full \
     fluxbox \
-    rsync
+    rsync \
+    libudev-dev \
+    build-essential \
+    wmctrl \
+    x11-utils
 
-# Instalar Love2D y luasocket para mods
+# Install Love2D and luasocket for mods
 RUN add-apt-repository ppa:bartbes/love-stable -y && \
     apt-get update && \
     apt-get install -y love lua-socket
 
-# Instalar dependencias mínimas para SDL
-RUN apt-get install -y libsdl2-2.0-0
-
-# Crear usuario steam si no existe
+# Create steam user if not exists
 RUN if ! id steam &>/dev/null; then useradd -m -s /bin/bash steam; fi
 
-# API Python - instalar dependencias
+# Install Python dependencies
 COPY requirements.txt /tmp/requirements.txt
 RUN pip3 install --break-system-packages --no-cache-dir -r /tmp/requirements.txt
 
-# Copiar configuración centralizada
+# Copy configuration
 COPY config/paths.env /etc/app/paths.env
 
-# Scripts
+# Copy essential scripts
 COPY scripts/config_utils.sh /usr/local/bin/config_utils.sh
 COPY scripts/setup_all.sh /usr/local/bin/setup_all.sh
 COPY scripts/startup.sh /usr/local/bin/startup.sh
 COPY scripts/setup_love.sh /usr/local/bin/setup_love.sh
 COPY config/supervisord.conf /config/supervisord.conf
 
-# Hacer scripts ejecutables
-RUN chmod +x /usr/local/bin/*.sh
+# Make scripts executable
 RUN chmod +x /usr/local/bin/*.sh
 
-# Copiar el mod BalatroLogger
+# Copy BalatroLogger mod
 COPY BalatroLogger /BalatroLogger
 
-# Crear directorios necesarios
+# Create necessary directories
 RUN mkdir -p /tmp/.X11-unix /var/log/supervisor /root/.local/share \
     && chmod 1777 /tmp/.X11-unix
 
-# Copiar configuración de Love2D guardada
+# Copy Love2D saved configuration
 COPY data/save_state /root/.local/share/love
 
-# FastAPI
+# Copy minimal FastAPI
 COPY api /srv/api
 WORKDIR /srv/api
 
-# Usar script de startup
+# Use startup script
 ENTRYPOINT ["/usr/local/bin/startup.sh"]

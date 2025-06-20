@@ -12,6 +12,11 @@ services:
     volumes:
       # As Balatro is installed in startup, this volume is used to persist the Steam installation and authentication
       - ./data/steam:/root/.steam/steam
+      # Mount host devices for input simulation
+      - /dev/uinput:/dev/uinput
+      - /dev/input:/dev/input
+    devices:
+      - /dev/uinput:/dev/uinput
     ports:
       - "8000:8000"
       - "5900:5900"
