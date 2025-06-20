@@ -66,6 +66,12 @@ These commands are required because:
    curl -X POST "http://localhost:8000/stop_balatro"
    ```
 
+4. **Take screenshot**:
+   ```bash
+   # Get screenshot (returns PNG image)
+   curl "http://localhost:8000/screenshot" > screenshot.png
+   ```
+
 ## API Endpoints
 
 | Endpoint | Method | Description |
@@ -73,6 +79,7 @@ These commands are required because:
 | `/gamepad/button` | POST | Press gamepad button |
 | `/start_balatro` | POST | Start Balatro with mods |
 | `/stop_balatro` | POST | Stop Balatro |
+| `/screenshot` | GET | Take a screenshot of the game |
 | `/health` | GET | Health check |
 
 ## Supported Buttons

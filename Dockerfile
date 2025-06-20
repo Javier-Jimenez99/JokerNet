@@ -27,6 +27,7 @@ RUN apt-get update && apt-get install -y \
     wmctrl \
     x11-utils \
     kmod \
+    imagemagick \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Love2D and luasocket for mods

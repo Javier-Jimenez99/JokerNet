@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import Response
 import os
 import subprocess
 import time
@@ -305,6 +306,26 @@ async def root():
             "start_game": "/start_balatro",
             "stop_game": "/stop_balatro",
             "gamepad_button": "/gamepad/button",
+            "screenshot": "/screenshot",
             "health": "/health"
         }
     }
+
+@app.get("/screenshot")
+async def get_screenshot():
+    """Take a screenshot of the game"""
+    try:
+        result = subprocess.run(
+            ['import', '-window', 'root', 'png:-'],
+            capture_output=True,
+            env={'DISPLAY': ':1'}
+        )
+        
+        if result.returncode != 0:
+            raise HTTPException(status_code=500, detail="Failed to capture screenshot")
+        
+        from fastapi.responses import Response
+        return Response(content=result.stdout, media_type="image/png")
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Screenshot error: {e}")
