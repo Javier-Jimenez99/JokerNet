@@ -2,4 +2,3 @@ fastapi==0.104.1
 uvicorn[standard]==0.24.0
 pydantic==2.5.0
 python-uinput==1.0.1
-vgamepad==0.1.0

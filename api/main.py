@@ -1,38 +1,28 @@
 from fastapi import FastAPI, HTTPException
-import json, os
+import os
 import subprocess
 import time
-from typing import Optional, Dict, Any, List
+from typing import Optional
 from pydantic import BaseModel
-import contextlib
+import uinput
 
-# Minimal Balatro Gamepad Controller
+
 class BalatroGamepadController:
     def __init__(self):
-        self.gamepad = None
         self.native_gamepad = None
         self.balatro_window_id = None
         self._init_controllers()
     
     def _init_controllers(self):
-        """Initialize native uinput gamepad with vgamepad fallback"""
-        # Try native uinput first
+        """Initialize native uinput gamepad"""
         try:
             self.native_gamepad = self._create_native_gamepad()
-        except Exception:
+        except Exception as e:
+            print(f"Failed to initialize native gamepad: {e}")
             self.native_gamepad = None
-        
-        # vgamepad fallback
-        try:
-            import vgamepad as vg
-            self.gamepad = vg.VX360Gamepad()
-        except Exception:
-            self.gamepad = None
     
     def _create_native_gamepad(self):
-        """Create native gamepad using uinput"""
-        import uinput
-        
+        """Create native gamepad using uinput"""        
         events = [
             # Face buttons
             uinput.BTN_A, uinput.BTN_B, uinput.BTN_X, uinput.BTN_Y,
@@ -108,7 +98,7 @@ class BalatroGamepadController:
             return False
     
     def press_button(self, button_name: str, duration: float = 0.1):
-        """Press gamepad button with fallback priority: native -> vgamepad -> keyboard"""
+        """Press gamepad button with fallback: native uinput -> keyboard"""
         
         # Try native uinput first
         if self.native_gamepad:
@@ -116,20 +106,12 @@ class BalatroGamepadController:
             if result["status"] == "success":
                 return result
         
-        # Fallback to vgamepad
-        if self.gamepad:
-            result = self._press_button_vgamepad(button_name, duration)
-            if result["status"] == "success":
-                return result
-        
-        # Last fallback: keyboard
+        # Fallback to keyboard
         return self._press_button_keyboard(button_name, duration)
     
     def _press_button_native(self, button_name: str, duration: float):
         """Press button with native gamepad"""
-        try:
-            import uinput
-            
+        try:            
             button_map = {
                 'A': uinput.BTN_A,
                 'B': uinput.BTN_B,
@@ -180,52 +162,9 @@ class BalatroGamepadController:
         except Exception as e:
             return {"status": "error", "message": f"Native gamepad error: {e}"}
     
-    def _press_button_vgamepad(self, button_name: str, duration: float):
-        """Press button with vgamepad fallback"""
-        try:
-            import vgamepad as vg
-            
-            button_map = {
-                'A': vg.XUSB_BUTTON.XUSB_GAMEPAD_A,
-                'B': vg.XUSB_BUTTON.XUSB_GAMEPAD_B,
-                'X': vg.XUSB_BUTTON.XUSB_GAMEPAD_X,
-                'Y': vg.XUSB_BUTTON.XUSB_GAMEPAD_Y,
-                'LB': vg.XUSB_BUTTON.XUSB_GAMEPAD_LEFT_SHOULDER,
-                'RB': vg.XUSB_BUTTON.XUSB_GAMEPAD_RIGHT_SHOULDER,
-                'START': vg.XUSB_BUTTON.XUSB_GAMEPAD_START,
-                'BACK': vg.XUSB_BUTTON.XUSB_GAMEPAD_BACK,
-                'DPAD_UP': vg.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_UP,
-                'DPAD_DOWN': vg.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_DOWN,
-                'DPAD_LEFT': vg.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_LEFT,
-                'DPAD_RIGHT': vg.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_RIGHT,
-            }
-            
-            button = button_map.get(button_name.upper())
-            if not button:
-                return {"status": "error", "message": f"Button '{button_name}' not recognized"}
-            
-            self.focus_balatro_window()
-            
-            self.gamepad.press_button(button)
-            self.gamepad.update()
-            time.sleep(duration)
-            self.gamepad.release_button(button)
-            self.gamepad.update()
-            
-            return {
-                "status": "success",
-                "message": f"Button {button_name} pressed (vgamepad)",
-                "method": "vgamepad"
-            }
-            
-        except Exception as e:
-            return {"status": "error", "message": f"vgamepad error: {e}"}
-    
     def _press_button_keyboard(self, button_name: str, duration: float):
         """Keyboard fallback for button presses"""
         try:
-            import uinput
-            
             key_map = {
                 'A': uinput.KEY_SPACE,
                 'B': uinput.KEY_ESC,
@@ -297,23 +236,12 @@ BALATRO_LOVE_DIR = CONFIG.get('BALATRO_LOVE_DIR', '/opt/balatro-love')
 LOVELY_PRELOAD = CONFIG.get('LOVELY_PRELOAD', '/opt/lovely/liblovely.so')
 
 # API Models
-class LogEvent(BaseModel):
-    type: str
-    data: Dict[str, Any]
-    timestamp: int
-
 class GamepadButtonRequest(BaseModel):
     button: str
     duration: Optional[float] = 0.1
 
 # Global state
-logger_state = {
-    "events_received": 0,
-    "last_event": None,
-    "last_event_time": None,
-    "game_state": {},
-    "balatro_running": False
-}
+balatro_running = False
 
 balatro_process: Optional[subprocess.Popen] = None
 gamepad_controller = BalatroGamepadController()
@@ -323,39 +251,6 @@ app = FastAPI(
     description="Minimal API for Balatro gamepad control",
     version="1.0.0"
 )
-
-@app.post("/logger/event")
-async def receive_log_event(event: LogEvent):
-    """Receive events from BalatroLogger mod"""
-    try:
-        global logger_state
-        
-        logger_state["events_received"] += 1
-        logger_state["last_event"] = event.dict()
-        logger_state["last_event_time"] = time.time()
-        
-        if event.type == "game_state":
-            logger_state["game_state"] = event.data
-            logger_state["balatro_running"] = True
-            
-        return {
-            "status": "success", 
-            "message": "Event logged",
-            "event_count": logger_state["events_received"]
-        }
-        
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error processing event: {e}")
-
-@app.get("/logger/status")
-async def get_logger_status():
-    """Logger status and last activity"""
-    return {
-        "status": "active",
-        "events_received": logger_state["events_received"],
-        "last_event_time": logger_state["last_event_time"],
-        "balatro_running": logger_state["balatro_running"]
-    }
 
 @app.post("/start_balatro")
 async def start_balatro():
@@ -387,7 +282,8 @@ async def start_balatro():
             cwd=BALATRO_LOVE_DIR
         )
         
-        logger_state["balatro_running"] = True
+        global balatro_running
+        balatro_running = True
         
         return {
             "status": "started",
@@ -416,7 +312,8 @@ async def stop_balatro():
             balatro_process.kill()
             balatro_process.wait()
         
-        logger_state["balatro_running"] = False
+        global balatro_running
+        balatro_running = False
         balatro_process = None
         
         return {"status": "stopped"}
@@ -435,16 +332,6 @@ async def press_gamepad_button(request: GamepadButtonRequest):
     
     return result
 
-@app.get("/status")
-async def get_status():
-    """System status"""
-    return {
-        "api_status": "running",
-        "balatro_running": logger_state["balatro_running"],
-        "gamepad_available": gamepad_controller.gamepad is not None or gamepad_controller.native_gamepad is not None,
-        "events_received": logger_state["events_received"]
-    }
-
 @app.get("/health")
 async def health_check():
     """Health check"""
@@ -458,11 +345,9 @@ async def root():
         "version": "1.0.0",
         "status": "running",
         "endpoints": {
-            "logger_status": "/logger/status",
             "start_game": "/start_balatro",
             "stop_game": "/stop_balatro",
             "gamepad_button": "/gamepad/button",
-            "system_status": "/status",
             "health": "/health"
         }
     }

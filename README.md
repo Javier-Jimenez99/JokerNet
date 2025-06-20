@@ -10,11 +10,39 @@ Minimal API for controlling Balatro with virtual gamepad inputs in Docker.
 - **Event Logging**: Receive events from BalatroLogger mod
 - **Minimal Setup**: Clean, production-ready configuration
 
+## Prerequisites (Host Setup)
+
+**IMPORTANT**: Before running the container, execute these commands on the host system:
+
+```bash
+# Load uinput kernel module
+sudo modprobe uinput
+
+# Set permissions for uinput device
+sudo chmod 666 /dev/uinput
+```
+
+These commands are required because:
+- Containers share the host kernel and cannot load kernel modules themselves
+- The `/dev/uinput` device is needed for virtual gamepad functionality
+- Proper permissions are required for the container to access the device
+
 ## Quick Start
 
-1. **Build and run**:
+1. **Setup host prerequisites** (see above)
+
+2. **Build and run**:
    ```bash
    docker compose up --build
+   ```
+
+   Or run manually with required privileges:
+   ```bash
+   docker run --privileged \
+     --device=/dev/uinput \
+     -v /dev:/dev \
+     -p 8000:8000 \
+     your-balatro-image
    ```
 
 2. **Send gamepad inputs**:
@@ -57,17 +85,17 @@ Minimal API for controlling Balatro with virtual gamepad inputs in Docker.
 - **Menu buttons**: START, BACK
 - **D-pad**: DPAD_UP, DPAD_DOWN, DPAD_LEFT, DPAD_RIGHT
 
-## Input Fallback System
+## Input System
 
-1. **Native uinput**: Creates Xbox gamepad device directly
-2. **vgamepad**: Virtual gamepad library fallback
-3. **Keyboard**: Final fallback using keyboard keys
+The controller uses **native uinput** to create a virtual Xbox gamepad device directly through the Linux kernel. This provides the most reliable gamepad input for Balatro.
+
+**Fallback**: If uinput fails, the system falls back to keyboard input mapping.
 
 ## Requirements
 
-- Docker with privileged mode
-- `/dev/uinput` and `/dev/input` device access
-- uinput kernel module loaded
+- Docker with privileged mode and device access
+- Host system with uinput kernel module loaded
+- `/dev/uinput` device access from container
 
 ## Configuration
 
