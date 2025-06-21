@@ -71,4 +71,4 @@ def get_screen() -> ImageContent:
         raise RuntimeError(f"Unexpected error getting screenshot: {str(e)}")
 
 if __name__ == "__main__":
-    mcp.run(transport="streamable-http", port=8001, path="/mcp")
+    mcp.run(transport="streamable-http", host="0.0.0.0", port=8001, path="/mcp")
