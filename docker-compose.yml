@@ -18,8 +18,9 @@ services:
     devices:
       - /dev/uinput:/dev/uinput
     ports:
-      - "8000:8000"
-      - "5900:5900"
+      - "8000:8000"  # FastAPI
+      - "8001:8001"  # MCP Server
+      - "5900:5900"  # VNC
     shm_size: "2gb"
     privileged: true
     restart: unless-stopped

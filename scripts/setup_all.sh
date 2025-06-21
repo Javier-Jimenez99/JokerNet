@@ -36,44 +36,62 @@ fi
 # Copy BalatroLogger
 [[ -d "$MOD_SOURCE_DIR" ]] && cp -r "$MOD_SOURCE_DIR" "$LOVELY_MODS_DIR/" || { echo "❌ BalatroLogger not found"; exit 1; }
 
-# Download external mods if configured
+# Install additional mods from MOD_URLS
 if [[ -n "${MOD_URLS:-}" ]]; then
-    mkdir -p "$BALATRO_STEAM_DIR/Mods" "$TEMP_MODS_DIR"
-    echo "$MOD_URLS" | tr ',' '\n' | while read -r url; do
-        [[ -z "${url// }" ]] && continue
-        url=$(echo "$url" | xargs)
-        
-        # Handle Steamodded examples repository specially
-        if [[ "$url" == *"Steamodded/examples"* ]]; then
-            echo "  📦 Downloading Steamodded examples..."
-            temp_file=$(mktemp -p "$TEMP_MODS_DIR")
-            temp_dir=$(mktemp -d -p "$TEMP_MODS_DIR")
+    echo "📥 Installing additional mods from MOD_URLS..."
+    IFS=',' read -ra URLS <<< "$MOD_URLS"
+    for url in "${URLS[@]}"; do
+        url=$(echo "$url" | xargs)  # trim whitespace
+        if [[ -n "$url" ]]; then
+            echo "📦 Downloading mod from: $url"
             
-            if curl -sSL "$url" -o "$temp_file" && unzip -q "$temp_file" -d "$temp_dir"; then
-                # Extract specific mods from the examples repo
-                examples_dir=$(find "$temp_dir" -name "examples-*" -type d | head -1)
-                if [[ -d "$examples_dir/Mods/KeyboardController" ]]; then
-                    echo "    📁 Installing KeyboardController..."
-                    cp -r "$examples_dir/Mods/KeyboardController" "$LOVELY_MODS_DIR/"
-                fi
-                # Add other specific mods here if needed
+            # Extract mod name from URL (get the repo name)
+            if [[ "$url" =~ github\.com/[^/]+/([^/]+) ]]; then
+                mod_name="${BASH_REMATCH[1]}"
+                # Remove common suffixes
+                mod_name="${mod_name%.git}"
+                mod_name="${mod_name%-main}"
+                mod_name="${mod_name%-master}"
+            else
+                # Fallback: use timestamp if we can't extract name
+                mod_name="mod_$(date +%s)"
             fi
-            rm -rf "$temp_file" "$temp_dir"
-        else
-            # Handle regular mod downloads
-            name=$(basename "$url" .zip)
-            dest="$BALATRO_STEAM_DIR/Mods/$name"
             
-            if [[ ! -d "$dest" ]]; then
-                echo "  📁 Downloading $name..."
-                temp_file=$(mktemp -p "$TEMP_MODS_DIR")
-                curl -sSL "$url" -o "$temp_file" && unzip -o -q "$temp_file" -d "$BALATRO_STEAM_DIR/Mods" && rm -f "$temp_file"
+            echo "📂 Installing mod as: $mod_name"
+            
+            # Download and extract mod
+            temp_file="/tmp/${mod_name}.zip"
+            if curl -L -o "$temp_file" "$url"; then
+                # Extract to temporary directory first
+                temp_dir="/tmp/extract_${mod_name}"
+                mkdir -p "$temp_dir"
+                
+                if unzip -q "$temp_file" -d "$temp_dir"; then
+                    # Find the actual mod directory (usually the first subdirectory)
+                    extracted_dir=$(find "$temp_dir" -mindepth 1 -maxdepth 1 -type d | head -n1)
+                    
+                    if [[ -n "$extracted_dir" && -d "$extracted_dir" ]]; then
+                        # Move to mods directory
+                        target_dir="$LOVELY_MODS_DIR/$mod_name"
+                        mv "$extracted_dir" "$target_dir"
+                        echo "✅ $mod_name installed successfully"
+                    else
+                        echo "⚠️ Could not find extracted directory for $mod_name"
+                    fi
+                else
+                    echo "⚠️ Failed to extract $mod_name"
+                fi
+                
+                # Cleanup
+                rm -f "$temp_file"
+                rm -rf "$temp_dir"
+            else
+                echo "⚠️ Failed to download mod from $url"
             fi
         fi
     done
-    
-    # Sync external mods to Lovely
-    [[ -d "$BALATRO_STEAM_DIR/Mods" ]] && rsync -a "$BALATRO_STEAM_DIR/Mods/" "$LOVELY_MODS_DIR/" --exclude="BalatroLogger*" 2>/dev/null || true
+else
+    echo "ℹ️ No additional mods specified in MOD_URLS"
 fi
 
 # Configure environment

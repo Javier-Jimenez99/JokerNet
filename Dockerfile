@@ -65,9 +65,9 @@ RUN mkdir -p /tmp/.X11-unix /var/log/supervisor /root/.local/share \
 # Copy Love2D saved configuration
 COPY data/save_state /root/.local/share/love
 
-# Copy minimal FastAPI
-COPY api /srv/api
-WORKDIR /srv/api
+# Copy src directory with API and MCP server
+COPY src /srv/src
+WORKDIR /srv/src
 
 # Use startup script
 ENTRYPOINT ["/usr/local/bin/startup.sh"]

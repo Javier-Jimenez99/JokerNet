@@ -7,6 +7,7 @@ from typing import Optional
 from pydantic import BaseModel
 import uinput
 
+ACTIONS_DONE = {}
 
 class BalatroGamepadController:
     def __init__(self):
@@ -28,7 +29,8 @@ class BalatroGamepadController:
             # Face buttons
             uinput.BTN_A, uinput.BTN_B, uinput.BTN_X, uinput.BTN_Y,
             # Shoulder buttons  
-            uinput.BTN_TL, uinput.BTN_TR,
+            uinput.BTN_TL, uinput.BTN_TR, uinput.ABS_Z + (0, 255, 0, 0),  # LT
+            uinput.ABS_RZ + (0, 255, 0, 0),  # RT
             # Menu buttons
             uinput.BTN_SELECT, uinput.BTN_START,
             # D-pad
@@ -57,6 +59,8 @@ class BalatroGamepadController:
         device.emit(uinput.ABS_RY, 0)
         device.emit(uinput.ABS_HAT0X, 0)
         device.emit(uinput.ABS_HAT0Y, 0)
+        device.emit(uinput.ABS_Z, 0)
+        device.emit(uinput.ABS_RZ, 0)
         device.syn()
         
         return device
@@ -116,16 +120,18 @@ class BalatroGamepadController:
                 'Y': uinput.BTN_Y,
                 'LB': uinput.BTN_TL,
                 'RB': uinput.BTN_TR,
+                'LT': uinput.ABS_Z,
+                'RT': uinput.ABS_RZ,
                 'START': uinput.BTN_START,
                 'BACK': uinput.BTN_SELECT,
                 'SELECT': uinput.BTN_SELECT,
             }
             
             dpad_map = {
-                'DPAD_UP': (uinput.ABS_HAT0Y, -1),
-                'DPAD_DOWN': (uinput.ABS_HAT0Y, 1),
-                'DPAD_LEFT': (uinput.ABS_HAT0X, -1),
-                'DPAD_RIGHT': (uinput.ABS_HAT0X, 1),
+                'UP': (uinput.ABS_HAT0Y, -1),
+                'DOWN': (uinput.ABS_HAT0Y, 1),
+                'LEFT': (uinput.ABS_HAT0X, -1),
+                'RIGHT': (uinput.ABS_HAT0X, 1),
             }
             
             button_name = button_name.upper()
@@ -194,8 +200,9 @@ BALATRO_LOVE_DIR = CONFIG.get('BALATRO_LOVE_DIR', '/opt/balatro-love')
 LOVELY_PRELOAD = CONFIG.get('LOVELY_PRELOAD', '/opt/lovely/liblovely.so')
 
 # API Models
-class GamepadButtonRequest(BaseModel):
-    button: str
+class GamepadButtonsRequest(BaseModel):
+    buttons: str
+    step_id: Optional[str] = None
     duration: Optional[float] = 0.1
 
 class AutoStartRequest(BaseModel):
@@ -284,16 +291,50 @@ async def stop_balatro():
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error stopping Balatro: {e}")
 
-@app.post("/gamepad/button")
-async def press_gamepad_button(request: GamepadButtonRequest):
+@app.post("/gamepad/buttons")
+async def press_gamepad_button(request: GamepadButtonsRequest):
     """Press gamepad button"""
     global gamepad_controller
-    result = gamepad_controller.press_button(request.button, request.duration)
+
+    buttons = request.buttons.split()
+    if not buttons:
+        raise HTTPException(status_code=400, detail="No buttons specified")
     
+    result = None
+    success = True
+
+    for button in buttons:
+        button = button.strip().upper()
+        if button not in [
+            'A', 'B', 'X', 'Y', 'LB', 'RB', 'LT', 'RT',
+            'START', 'BACK', 'SELECT', 'UP', 'DOWN', 'LEFT', 'RIGHT'
+        ]:
+            raise HTTPException(status_code=400, detail=f"Invalid button: {button}")
+        
+        result = gamepad_controller.press_button(button, request.duration)
+        
+        time.sleep(1) # Wait for 1 second between button presses
+    
+        if result["status"] == "error":
+            success = False
+            break
+            
+        
+    # Store action in global state
+    if request.step_id:
+        ACTIONS_DONE[request.step_id] = {
+            "buttons": buttons,
+            "timestamp": time.time(),
+            "success": success,
+        }
+
     if result["status"] == "error":
         raise HTTPException(status_code=400, detail=result["message"])
     
-    return result
+    return {
+        "status": "success",
+        "message": f"{buttons} pressed",
+    }
 
 @app.post("/auto_start")
 async def auto_start_game(request: AutoStartRequest):
@@ -362,7 +403,7 @@ async def get_screenshot():
         if result.returncode != 0:
             raise HTTPException(status_code=500, detail="Failed to capture screenshot")
         
-        from fastapi.responses import Response
+
         return Response(content=result.stdout, media_type="image/png")
         
     except Exception as e:
