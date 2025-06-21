@@ -1,5 +1,5 @@
 import streamlit as st
-from streamlit.components.v1 import html
+from streamlit.components.v1 import iframe   # 1 solo iframe, sin sandbox extra
 
 st.set_page_config(layout="wide", page_title="Balatro - Escritorio Remoto")
 st.title("🃏 Balatro - Escritorio Remoto")
@@ -9,8 +9,7 @@ host = "localhost"  # Cambia esto por tu IP/dominio si ejecutas remotamente
 ws_port = "6080"
 
 novnc_url = (
-    f"http://{host}:{ws_port}/vnc.html"
-    f"?host={host}&port={ws_port}&autoconnect=1&resize=scale&reconnect=1"
+    "http://localhost:6080/vnc.html?host=localhost&port=6080&autoconnect=1&resize=scale&reconnect=1"
 )
 
 # Información de conexión
@@ -22,46 +21,4 @@ st.info("""
 """)
 
 # Iframe con noVNC
-html(
-    f'''
-    <iframe 
-        src="{novnc_url}" 
-        style="
-            width:100%;
-            height:800px;
-            border:none;
-            border-radius:8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        "
-        allow="fullscreen"
-    ></iframe>
-    ''',
-    height=800,
-)
-
-# Instrucciones adicionales
-st.markdown("""
-### 📋 Instrucciones:
-1. **Balatro** se ejecuta automáticamente al iniciar el contenedor
-2. Puedes interactuar con el escritorio usando mouse y teclado
-3. Si necesitas reconectar, recarga la página
-4. Para pantalla completa, usa el botón en la barra de herramientas de noVNC
-
-### 🔧 Servicios disponibles:
-- **Streamlit (esta app)**: `http://localhost:8501`
-- **API REST**: `http://localhost:8000/docs`
-- **noVNC directo**: `http://localhost:6080`
-- **VNC tradicional**: `localhost:5900`
-
-### 🐳 Comandos Docker:
-```bash
-# Iniciar el contenedor
-docker-compose up -d
-
-# Ver logs
-docker-compose logs -f
-
-# Parar el contenedor
-docker-compose down
-```
-""")
+iframe(src=novnc_url, height=800, scrolling=False)   # aquí se pinta la consola

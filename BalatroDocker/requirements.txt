@@ -4,5 +4,4 @@ pydantic
 python-uinput
 requests
 fastmcp
-streamlit
 websockify

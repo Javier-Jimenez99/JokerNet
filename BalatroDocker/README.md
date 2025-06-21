@@ -6,18 +6,18 @@ Esta implementación ejecuta Balatro en un contenedor Docker con acceso remoto a
 
 - ✅ **Balatro** ejecutándose automáticamente
 - ✅ **noVNC** como cliente web para acceso remoto
-- ✅ **Streamlit** como interfaz principal  
 - ✅ **API REST** para automatización
 - ✅ **MCP Server** para integración con IA
 - ✅ **Logs** centralizados con Supervisor
 - ✅ **Resolución 1920x1080** optimizada para gaming
+- ✅ **Streamlit externo** para interfaz opcional
 
 ## 🏗️ Arquitectura
 
 ```
 ┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│   Streamlit     │────│     noVNC        │────│      VNC        │
-│   (Puerto 8501) │    │   (Puerto 6080)  │    │  (Puerto 5900)  │
+│ Streamlit       │────│     noVNC        │────│      VNC        │
+│ (Externo 8501)  │    │   (Puerto 6080)  │    │  (Puerto 5900)  │
 └─────────────────┘    └──────────────────┘    └─────────────────┘
                                                         │
                                                 ┌───────────────┐
@@ -51,19 +51,40 @@ docker-compose up -d
 
 | Servicio | URL | Descripción |
 |----------|-----|-------------|
-| **🌐 Streamlit** | http://localhost:8501 | **Interfaz principal** con noVNC integrado |
-| **🖥️ noVNC directo** | http://localhost:6080 | Cliente noVNC standalone |
+| **🖥️ noVNC directo** | http://localhost:6080 | **Cliente noVNC principal** |
 | **🔌 API REST** | http://localhost:8000/docs | Documentación automática de la API |
 | **🧠 MCP Server** | http://localhost:8001 | Servidor MCP para IA |
 | **📺 VNC tradicional** | `localhost:5900` | Para clientes VNC nativos |
 
+### 4. Ejecutar Streamlit (opcional):
+
+Para usar la interfaz Streamlit, ejecuta desde fuera del Docker:
+
+```bash
+# Instalar dependencias (una sola vez)
+pip install streamlit
+
+# Ejecutar la interfaz
+cd src
+streamlit run streamlit_app.py
+```
+
+Entonces tendrás también:
+- **🌐 Streamlit** | http://localhost:8501 | Interfaz moderna con noVNC integrado
+
 ## 🎮 Uso de la Interfaz
 
-### Streamlit + noVNC (Recomendado):
-1. Abre **http://localhost:8501**
-2. La conexión a Balatro es **automática**
+### Opción 1: noVNC directo (incluido en Docker):
+1. Abre **http://localhost:6080**
+2. Clic en "Connect" 
 3. Usa mouse y teclado normalmente
-4. Pantalla completa disponible en la barra de noVNC
+4. Pantalla completa disponible en la barra de herramientas
+
+### Opción 2: Streamlit + noVNC (externo):
+1. Ejecuta: `cd src && streamlit run streamlit_app.py`
+2. Abre **http://localhost:8501**
+3. La conexión a Balatro es **automática**
+4. Interfaz moderna con instrucciones integradas
 
 ### Control por API:
 ```bash
@@ -85,9 +106,9 @@ curl "http://localhost:8000/screenshot" > screenshot.png
 
 ```
 BalatroDocker/
-├── 🐳 Dockerfile                 # Imagen con Balatro + noVNC + Streamlit
+├── 🐳 Dockerfile                 # Imagen con Balatro + noVNC
 ├── 🎛️ docker-compose.yml         # Orquestación de servicios
-├── 📦 requirements.txt           # Dependencias Python
+├── 📦 requirements.txt           # Dependencias Python (sin Streamlit)
 ├── config/
 │   ├── supervisord.conf       # ⚙️ Configuración de procesos
 │   └── paths.env             # 🔧 Variables de entorno
@@ -96,9 +117,12 @@ BalatroDocker/
 │   ├── startup.sh            # 🚀 Script de inicio
 │   └── ...
 └── src/
-    ├── streamlit_app.py      # 🌐 App Streamlit con noVNC
     ├── api.py               # 🔌 API REST
     └── mcp_server.py        # 🧠 Servidor MCP
+
+# Fuera del Docker:
+src/
+└── streamlit_app.py         # 🌐 App Streamlit opcional (externa)
 ```
 
 ## 🔍 Servicios Supervisados
@@ -111,7 +135,6 @@ Todos los servicios se gestionan con **Supervisor**:
 4. **🌐 noVNC** - Proxy WebSocket (puerto 6080)
 5. **🔌 API** - Servidor FastAPI (puerto 8000)
 6. **🧠 MCP** - Servidor MCP (puerto 8001)
-7. **🎨 Streamlit** - Interfaz web (puerto 8501)
 
 ## 🎯 Auto-Inicio de Partidas
 
@@ -287,6 +310,12 @@ docker exec container_name supervisorctl restart novnc
 
 ---
 
-🎯 **Resultado Final**: Balatro ejecutándose en un navegador web con control total, APIs para automatización e integración con IA, todo mediante una interfaz moderna y fácil de usar.
+🎯 **Resultado Final**: Balatro ejecutándose en un navegador web con control total, APIs para automatización e integración con IA.
 
-🚀 **Para empezar**: `docker-compose up -d` → **http://localhost:8501**
+🚀 **Para empezar rápido**: 
+1. `docker-compose up -d` 
+2. **http://localhost:6080** (noVNC directo)
+
+🎨 **Para interfaz moderna**: 
+1. `cd src && streamlit run streamlit_app.py`
+2. **http://localhost:8501** (Streamlit + noVNC)
