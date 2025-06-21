@@ -1,24 +1,13 @@
 import streamlit as st
-from streamlit.components.v1 import iframe   # 1 solo iframe, sin sandbox extra
+from streamlit.components.v1 import html
 
-st.set_page_config(layout="wide", page_title="Balatro - Escritorio Remoto")
-st.title("🃏 Balatro - Escritorio Remoto")
+st.set_page_config(layout="wide", page_title="Balatro – Escritorio Remoto")
+st.title("🃏 Balatro – Escritorio Remoto")
 
-# Configuración de conexión noVNC
-host = "localhost"  # Cambia esto por tu IP/dominio si ejecutas remotamente
-ws_port = "6080"
+novnc_url = "http://localhost:6080/vnc.html" \
+            "?autoconnect=1&resize=scale&view_clip=1&reconnect=1"
 
-novnc_url = (
-    "http://localhost:6080/vnc.html?host=localhost&port=6080&autoconnect=1&resize=scale&reconnect=1"
-)
+html(f'<iframe src="{novnc_url}" style="width:100%;height:800px;border:none;"></iframe>',
+     height=820)
 
-# Información de conexión
-st.info("""
-🎮 **Balatro está funcionando en el escritorio remoto**
-- Usa el mouse y teclado normalmente
-- La conexión se establece automáticamente
-- Resolución: 1920x1080
-""")
-
-# Iframe con noVNC
-iframe(src=novnc_url, height=800, scrolling=False)   # aquí se pinta la consola
+st.info("🎮 **Balatro** corriendo en el escritorio remoto…")

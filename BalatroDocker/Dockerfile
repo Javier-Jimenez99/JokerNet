@@ -30,6 +30,7 @@ RUN apt-get update && apt-get install -y \
     imagemagick \
     nodejs \
     npm \
+    nginx \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Love2D and luasocket for mods
@@ -50,6 +51,7 @@ RUN git clone https://github.com/novnc/noVNC.git /opt/noVNC && \
 
 # Copy configuration
 COPY config/paths.env /etc/app/paths.env
+COPY config/nginx.conf /etc/nginx/sites-available/default
 
 # Copy essential scripts
 COPY scripts/config_utils.sh /usr/local/bin/config_utils.sh

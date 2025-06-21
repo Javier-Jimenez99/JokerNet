@@ -21,7 +21,7 @@ services:
       - "8000:8000"  # FastAPI
       - "8001:8001"  # MCP Server
       - "5900:5900"  # VNC
-      - "6080:6080"  # noVNC WebSocket
+      - "6080:80"    # <- host 6080 ➜ contenedor 80 (Nginx)
     shm_size: "2gb"
     privileged: true
     restart: unless-stopped
