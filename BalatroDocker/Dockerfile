@@ -1,7 +1,7 @@
 FROM steamcmd/steamcmd:ubuntu
 
 ENV DEBIAN_FRONTEND=noninteractive \
-    DISPLAY=:1 \
+    DISPLAY=:0 \
     GAME_SPEED=16
 
 # Install minimal system dependencies
@@ -20,7 +20,6 @@ RUN apt-get update && apt-get install -y \
     supervisor \
     bsdmainutils \
     p7zip-full \
-    fluxbox \
     rsync \
     libudev-dev \
     build-essential \

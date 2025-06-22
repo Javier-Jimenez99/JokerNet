@@ -32,7 +32,7 @@ load_config "/etc/app/paths.env" || {
 }
 
 # Setup environment
-export DISPLAY=:1 XDG_RUNTIME_DIR=/tmp/runtime-root
+export DISPLAY=:0 XDG_RUNTIME_DIR=/tmp/runtime-root
 mkdir -p "$XDG_RUNTIME_DIR"
 modprobe uinput 2>/dev/null || true
 chmod 666 /dev/uinput 2>/dev/null || true

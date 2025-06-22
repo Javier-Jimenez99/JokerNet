@@ -237,7 +237,7 @@ async def start_balatro():
         cmd = BALATRO_CMD.split()
         
         env = dict(os.environ, 
-                  DISPLAY=":1", 
+                  DISPLAY=":0", 
                   LD_PRELOAD=LOVELY_PRELOAD,
                   LOVELY_MOD_DIR=LOVELY_MODS_DIR)
         
@@ -397,7 +397,7 @@ async def get_screenshot():
         result = subprocess.run(
             ['import', '-window', 'root', 'png:-'],
             capture_output=True,
-            env={'DISPLAY': ':1'}
+            env={'DISPLAY': ':0'}
         )
         
         if result.returncode != 0:

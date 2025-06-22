@@ -129,12 +129,11 @@ src/
 
 Todos los servicios se gestionan con **Supervisor**:
 
-1. **🖥️ Xvfb** - Servidor X virtual (display :1)
-2. **🪟 Fluxbox** - Window manager
-3. **📺 x11vnc** - Servidor VNC (puerto 5900)
-4. **🌐 noVNC** - Proxy WebSocket (puerto 6080)
-5. **🔌 API** - Servidor FastAPI (puerto 8000)
-6. **🧠 MCP** - Servidor MCP (puerto 8001)
+1. **🖥️ Xvfb** - Servidor X virtual (display :0)
+2. **📺 x11vnc** - Servidor VNC (puerto 5900)
+3. **🌐 noVNC** - Proxy WebSocket (puerto 6080)
+4. **🔌 API** - Servidor FastAPI (puerto 8000)
+5. **🧠 MCP** - Servidor MCP (puerto 8001)
 
 ## 🎯 Auto-Inicio de Partidas
 

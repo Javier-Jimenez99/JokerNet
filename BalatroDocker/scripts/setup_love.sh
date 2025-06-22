@@ -26,16 +26,17 @@ if [[ -f "$BALATRO_STEAM_DIR/Balatro.exe" ]]; then
     if [[ -f "main.lua" ]]; then
         cat > /usr/local/bin/balatro-lovely <<'EOF'
 #!/bin/bash
-export DISPLAY=:1
+export DISPLAY=:0
 cd /opt/balatro-love
-LD_PRELOAD=/opt/lovely/liblovely.so love .
+exec love . "$@"
 EOF
         chmod +x /usr/local/bin/balatro-lovely
-        echo "✅ Love2D setup complete"
+        echo "✅ Balatro Love2D setup complete"
     else
-        echo "❌ Love2D setup failed"
-        exit 1
+        echo "⚠️ No main.lua found after extraction"
     fi
 else
-    echo "⚠️ Balatro.exe not found, skipping Love2D setup"
+    echo "⚠️ Balatro.exe not found at $BALATRO_STEAM_DIR"
 fi
+
+echo "✅ Love2D setup finished"

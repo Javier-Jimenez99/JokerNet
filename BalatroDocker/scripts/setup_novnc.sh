@@ -1,5 +1,4 @@
 #!/bin/bash
-
 # Script simple para configurar noVNC
 set -e
 
