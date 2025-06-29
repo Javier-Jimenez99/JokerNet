@@ -7,10 +7,9 @@ import os
 
 
 def load_agent_prompt() -> str:
-     """Load the agent prompt from a file."""
-     with open("prompts/agent_prompt.txt", "r") as file:
-          return file.read()
-
+    """Load the agent prompt from a file."""
+    with open("prompts/agent_prompt.txt", "r") as file:
+        return file.read()
 
 class BalatroAgent:
     def __init__(self):
