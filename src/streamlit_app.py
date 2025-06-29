@@ -63,6 +63,7 @@ def display_messages() -> None:
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
 
+@st.fragment
 def chat_block() -> None:
      display_messages()
      user_input = st.chat_input(placeholder="Escribe tu mensaje…")
@@ -92,7 +93,7 @@ def chat_block() -> None:
                     st.markdown(assistant_response)
 
           # Rerun to keep display in sync
-          st.rerun()
+          st.rerun(scope="fragment")
 
 if __name__ == "__main__":
      st.set_page_config(layout="wide", page_title="Balatro - Escritorio Remoto")
