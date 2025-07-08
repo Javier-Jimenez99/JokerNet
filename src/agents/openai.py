@@ -8,14 +8,14 @@ import os
 
 def load_agent_prompt() -> str:
     """Load the agent prompt from a file."""
-    with open("prompts/agent_prompt.txt", "r") as file:
+    with open("prompts/general_prompt.txt", "r") as file:
         return file.read()
 
-class BalatroAgent:
+class OpenAIBalatroAgent:
     def __init__(self):
         """Initialize the agent synchronously. Use create() for full setup."""
         self.agent = None
-        self.max_iterations = 5  
+        self.max_iterations = 20  
     
     @classmethod
     async def create(cls, model: str = "gpt-4o-mini", mcp_url: str = "http://localhost:8001/mcp", max_iterations: int = 10):
@@ -54,7 +54,7 @@ class BalatroAgent:
         self.agent = create_react_agent(
             model=llm,
             tools=await client.get_tools(),
-            debug=True,
+            debug=False,
             prompt=load_agent_prompt(),
         )
     

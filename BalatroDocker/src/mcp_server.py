@@ -1,10 +1,9 @@
-from fastmcp import FastMCP
 from uuid import uuid4
 import requests
-from fastmcp.utilities.types import Image, ImageContent
+from mcp.server.fastmcp import FastMCP, Image
 
 FASTAPI_URL = "http://localhost:8000"
-mcp = FastMCP(name="BalatroGameMCP")
+mcp = FastMCP(name="BalatroGameMCP", host="0.0.0.0", port=8001)
 
 @mcp.tool(description="Press a sequence of buttons to control the Balatro game. These buttons are from Xbox controller: A, B, X, Y, LEFT, RIGHT, UP, DOWN, START, SELECT, RB, RT, LB, LT. Example: 'A B LEFT RB'")
 def press_buttons(sequence: str) -> dict:
@@ -50,7 +49,7 @@ def press_buttons(sequence: str) -> dict:
         }
 
 @mcp.tool(description="Get a screenshot of the current state of the Balatro game.")
-def get_screen() -> ImageContent:
+def get_screen() -> Image:
     """
     Get a screenshot of the current state of the Balatro game.
     
@@ -71,4 +70,4 @@ def get_screen() -> ImageContent:
         raise RuntimeError(f"Unexpected error getting screenshot: {str(e)}")
 
 if __name__ == "__main__":
-    mcp.run(transport="streamable-http", host="0.0.0.0", port=8001, path="/mcp")
+    mcp.run(transport="streamable-http", mount_path="/mcp")

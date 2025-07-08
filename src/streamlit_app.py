@@ -3,7 +3,7 @@ from streamlit.components.v1 import html
 import requests
 import time 
 import asyncio
-from agent import BalatroAgent
+from agents import OpenAIBalatroAgent
 
 def start_balatro():
      """Start the Balatro game in a remote desktop environment."""
@@ -39,7 +39,7 @@ def restart_balatro():
 def create_agent():
     """Create the agent using asyncio.run to handle async initialization."""
     async def _create_agent():
-        return await BalatroAgent.create()
+        return await OpenAIBalatroAgent.create()
     
     return asyncio.run(_create_agent())
 

@@ -3,5 +3,5 @@ uvicorn[standard]
 pydantic
 python-uinput
 requests
-fastmcp
+mcp
 websockify
