@@ -226,3 +226,4 @@ logs/
 *.tmp
 *.temp
 Balatro Source/
+unsloth_compiled_cache/
