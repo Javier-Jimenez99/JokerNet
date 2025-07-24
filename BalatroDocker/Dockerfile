@@ -9,6 +9,7 @@ RUN apt-get update && apt-get install -y \
     python3 \
     python3-pip \
     python3-dev \
+    python3-tk \
     wget \
     curl \
     unzip \
@@ -25,6 +26,7 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     wmctrl \
     x11-utils \
+    xdotool \
     kmod \
     imagemagick \
     nodejs \

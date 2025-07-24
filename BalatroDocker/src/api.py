@@ -1,13 +1,104 @@
-from fastapi import FastAPI, HTTPException
-from fastapi.responses import Response
 import os
 import subprocess
+
+def wait_for_x11():
+    """Wait for X11 to be available"""
+    max_attempts = 30
+    for attempt in range(max_attempts):
+        try:
+            result = subprocess.run(
+                ['xdpyinfo', '-display', ':0'], 
+                capture_output=True, 
+                timeout=5
+            )
+            if result.returncode == 0:
+                print("X11 server is ready!")
+                return True
+        except (subprocess.TimeoutExpired, FileNotFoundError):
+            pass
+        
+        print(f"Waiting for X11 server... (attempt {attempt + 1}/{max_attempts})")
+        time.sleep(1)
+    
+    print("Warning: X11 server not available after 30 seconds")
+    return False
+
+def ensure_xauth():
+    """Ensure X11 authorization is set up"""
+    try:
+        if not os.path.exists('/root/.Xauthority'):
+            print("Creating X11 authority file...")
+            open('/root/.Xauthority', 'a').close()
+            subprocess.run(['xauth', 'add', ':0', '.', '$(xxd -l 16 -p /dev/urandom)'],
+                         capture_output=True)
+        return True
+    except Exception as e:
+        print(f"Warning: Could not set up X11 auth: {e}")
+        return False
+
+def relative_to_absolute(rel_x: float, rel_y: float):
+    """Convert relative coordinates (0-1) to absolute screen coordinates"""
+    screen_width, screen_height = pyautogui.size()
+    
+    # Clamp values to 0-1 range
+    rel_x = max(0.0, min(1.0, rel_x))
+    rel_y = max(0.0, min(1.0, rel_y))
+    
+    # Convert to absolute coordinates
+    abs_x = int(rel_x * screen_width)
+    abs_y = int(rel_y * screen_height)
+    
+    return abs_x, abs_y
+    
+# Initialize X11 on startup
+print("Initializing X11...")
+wait_for_x11()
+ensure_xauth()
+print("X11 initialization complete")
+
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import Response
+from PIL import Image, ImageDraw, ImageColor
+import io
 import time
+import pyautogui
 from typing import Optional
 from pydantic import BaseModel
 import uinput
 
 ACTIONS_DONE = {}
+
+def draw_point(image: Image.Image, point: list, color=None):
+    if isinstance(color, str):
+        try:
+            color = ImageColor.getrgb(color)
+            color = color + (128,)  
+        except ValueError:
+            color = (255, 0, 0, 128)  
+    else:
+        color = (255, 0, 0, 128)  
+
+    overlay = Image.new('RGBA', image.size, (255, 255, 255, 0))
+    overlay_draw = ImageDraw.Draw(overlay)
+    radius = min(image.size) * 0.05
+    x, y = point
+
+    overlay_draw.ellipse(
+        [(x - radius, y - radius), (x + radius, y + radius)],
+        fill=color
+    )
+    
+    center_radius = radius * 0.1
+    overlay_draw.ellipse(
+        [(x - center_radius, y - center_radius), 
+         (x + center_radius, y + center_radius)],
+        fill=(0, 255, 0, 255)
+    )
+
+    image = image.convert('RGBA')
+    combined = Image.alpha_composite(image, overlay)
+
+    return combined.convert('RGB')
 
 class BalatroGamepadController:
     def __init__(self):
@@ -205,6 +296,25 @@ class GamepadButtonsRequest(BaseModel):
     step_id: Optional[str] = None
     duration: Optional[float] = 0.1
 
+class MouseClickRequest(BaseModel):
+    x: float  # Relative coordinate (0-1)
+    y: float  # Relative coordinate (0-1)
+    button: str = "left"
+    clicks: int = 1
+
+class MouseMoveRequest(BaseModel):
+    x: float  # Relative coordinate (0-1)
+    y: float  # Relative coordinate (0-1)
+    duration: float = 0.0
+
+class MouseDragRequest(BaseModel):
+    start_x: float  # Relative coordinate (0-1)
+    start_y: float  # Relative coordinate (0-1)
+    end_x: float    # Relative coordinate (0-1)
+    end_y: float    # Relative coordinate (0-1)
+    duration: float = 0.5
+    button: str = "left"
+
 class AutoStartRequest(BaseModel):
     deck: Optional[str] = "b_red"
     stake: Optional[int] = 1
@@ -336,6 +446,58 @@ async def press_gamepad_button(request: GamepadButtonsRequest):
         "message": f"{buttons} pressed",
     }
 
+@app.post("/mouse/click")
+async def mouse_click(request: MouseClickRequest):
+    """Click at specific coordinates (relative 0-1)"""
+    try:
+        # Convert relative coordinates to absolute
+        abs_x, abs_y = relative_to_absolute(request.x, request.y)
+        
+        pyautogui.click(abs_x, abs_y, clicks=request.clicks, button=request.button)
+        return {
+            "status": "success",
+            "message": f"Clicked at relative ({request.x:.3f}, {request.y:.3f}) -> absolute ({abs_x}, {abs_y}) with {request.button} button {request.clicks} time(s)"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to click: {str(e)}")
+
+@app.post("/mouse/move")
+async def mouse_move(request: MouseMoveRequest):
+    """Move mouse cursor to specific coordinates (relative 0-1)"""
+    try:
+        # Convert relative coordinates to absolute
+        abs_x, abs_y = relative_to_absolute(request.x, request.y)
+        
+        pyautogui.moveTo(abs_x, abs_y, duration=request.duration)
+        return {
+            "status": "success",
+            "message": f"Moved mouse to relative ({request.x:.3f}, {request.y:.3f}) -> absolute ({abs_x}, {abs_y})"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to move mouse: {str(e)}")
+
+@app.post("/mouse/drag")
+async def mouse_drag(request: MouseDragRequest):
+    """Drag from start coordinates to end coordinates (relative 0-1)"""
+    try:
+        # Convert relative coordinates to absolute
+        abs_start_x, abs_start_y = relative_to_absolute(request.start_x, request.start_y)
+        abs_end_x, abs_end_y = relative_to_absolute(request.end_x, request.end_y)
+        
+        pyautogui.drag(
+            abs_end_x - abs_start_x,
+            abs_end_y - abs_start_y,
+            duration=request.duration,
+            button=request.button,
+            start=(abs_start_x, abs_start_y)
+        )
+        return {
+            "status": "success",
+            "message": f"Dragged from relative ({request.start_x:.3f}, {request.start_y:.3f}) -> absolute ({abs_start_x}, {abs_start_y}) to relative ({request.end_x:.3f}, {request.end_y:.3f}) -> absolute ({abs_end_x}, {abs_end_y}) with {request.button} button"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to drag: {str(e)}")
+
 @app.post("/auto_start")
 async def auto_start_game(request: AutoStartRequest):
     """Configure and trigger auto-start"""
@@ -367,6 +529,29 @@ async def get_mod_status():
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error: {e}")
 
+@app.get("/mouse/position")
+async def get_mouse_position():
+    """Get current mouse position in both absolute and relative coordinates"""
+    try:
+        # Get absolute position
+        abs_x, abs_y = pyautogui.position()
+        
+        # Get screen dimensions
+        screen_width, screen_height = pyautogui.size()
+        
+        # Calculate relative position
+        rel_x = abs_x / screen_width if screen_width > 0 else 0
+        rel_y = abs_y / screen_height if screen_height > 0 else 0
+        
+        return {
+            "absolute": {"x": abs_x, "y": abs_y},
+            "relative": {"x": round(rel_x, 6), "y": round(rel_y, 6)},
+            "screen_size": {"width": screen_width, "height": screen_height},
+            "status": "success"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get mouse position: {str(e)}")
+
 @app.get("/health")
 async def health_check():
     """Health check"""
@@ -379,16 +564,74 @@ async def root():
         "name": "Balatro Minimal API",
         "version": "1.0.0",
         "status": "running",
+        "coordinate_system": "Relative coordinates (0-1) where 0 is top/left edge and 1 is bottom/right edge",
         "endpoints": {
             "start_game": "/start_balatro",
             "stop_game": "/stop_balatro",
             "auto_start": "/auto_start",
             "mod_status": "/mod_status",
-            "gamepad_button": "/gamepad/button",
+            "gamepad_button": "/gamepad/buttons",
+            "mouse_click": "/mouse/click (x, y as float 0-1)",
+            "mouse_move": "/mouse/move (x, y as float 0-1)",
+            "mouse_drag": "/mouse/drag (start_x, start_y, end_x, end_y as float 0-1)",
+            "mouse_position": "/mouse/position",
             "screenshot": "/screenshot",
+            "screenshot_with_cursor": "/screenshot_with_cursor",
             "health": "/health"
         }
     }
+
+@app.get("/screenshot_with_cursor")
+async def get_screenshot_with_cursor():
+    """Screenshot con cursor visible"""
+    try:
+        # Verificar que X11 esté disponible
+        if not wait_for_x11():
+            raise HTTPException(status_code=503, detail="X11 server not available")
+        
+        # Capturar screenshot base
+        result = subprocess.run(
+            ['import', '-window', 'root', 'png:/tmp/screen_base.png'],
+            capture_output=True,
+            env={'DISPLAY': ':0'},
+            timeout=10
+        )
+        
+        if result.returncode != 0:
+            error_msg = result.stderr.decode() if result.stderr else "Unknown error"
+            raise HTTPException(status_code=500, detail=f"Failed to capture screenshot: {error_msg}")
+        
+        # Obtener posición actual del mouse
+        mouse_result = subprocess.run(
+            ['xdotool', 'getmouselocation', '--shell'],
+            capture_output=True, text=True,
+            env={'DISPLAY': ':0'},
+            timeout=5
+        )
+        
+        mouse_x, mouse_y = 0, 0
+        if mouse_result.returncode == 0:
+            for line in mouse_result.stdout.strip().split('\n'):
+                if line.startswith('X='):
+                    mouse_x = int(line.split('=')[1])
+                elif line.startswith('Y='):
+                    mouse_y = int(line.split('=')[1])
+        
+        # Dibujar cursor en la imagen usando la nueva función
+        img = Image.open('/tmp/screen_base.png')
+        
+        # Usar la función draw_point con color verde
+        img = draw_point(img, [mouse_x, mouse_y], "green")
+        
+        # Convertir a bytes para respuesta
+        img_buffer = io.BytesIO()
+        img.save(img_buffer, format='PNG')
+        img_buffer.seek(0)
+        
+        return Response(content=img_buffer.getvalue(), media_type="image/png")
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Screenshot with cursor error: {e}")
 
 @app.get("/screenshot")
 async def get_screenshot():
