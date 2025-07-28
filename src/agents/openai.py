@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, List, Optional
 from langchain_openai import AzureChatOpenAI
 from langgraph.prebuilt import create_react_agent
 from langchain_mcp_adapters.client import MultiServerMCPClient
@@ -18,7 +18,7 @@ class OpenAIBalatroAgent:
         cls,
         model: str = "gpt-4o-mini",
         mcp_url: str = "http://localhost:8001/mcp",
-        max_iterations: int = 10,
+        max_iterations: int = 10
     ):
         """Create and fully initialize a BalatroAgent instance."""
         instance = cls()
@@ -31,6 +31,7 @@ class OpenAIBalatroAgent:
     async def _initialize(self, model: str, mcp_url: str):
         """Internal async initialization method."""
         load_dotenv()
+            
         azure_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
         openai_api_key = os.getenv("AZURE_OPENAI_API_KEY")
         openai_api_version = os.getenv("AZURE_OPENAI_API_VERSION")
@@ -51,10 +52,14 @@ class OpenAIBalatroAgent:
 
         client = MultiServerMCPClient(
             {
-                "balatro": {
+                "mouse": {
                     "transport": "streamable_http",
-                    "url": mcp_url,
+                    "url": "http://localhost:8000/mouse/mcp"
                 },
+                "gamepad": {
+                    "transport": "streamable_http",
+                    "url": "http://localhost:8000/gamepad/mcp"
+                }
             }
         )
 

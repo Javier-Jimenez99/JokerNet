@@ -4,7 +4,8 @@ from langgraph.prebuilt import create_react_agent
 from .utils import load_agent_prompt, create_hermes_system_message
 from langchain_core.messages import SystemMessage
 from dotenv import load_dotenv
-from typing import Dict
+from typing import Dict, List, Optional
+import os
 
 
 class OpenSourceBalatroAgent:
@@ -18,7 +19,7 @@ class OpenSourceBalatroAgent:
         cls,
         model: str = "unsloth/Qwen2.5-VL-7B-Instruct-bnb-4bit",
         mcp_url: str = "http://localhost:8001/mcp",
-        max_iterations: int = 10,
+        max_iterations: int = 10
     ):
         """Create and fully initialize a BalatroAgent instance."""
         instance = cls()
@@ -26,13 +27,13 @@ class OpenSourceBalatroAgent:
         await instance._initialize(model, mcp_url)
         return instance
 
-    async def _initialize(self, model: str, mcp_url: str):
+    async def _initialize(
+        self, 
+        model: str, 
+        mcp_url: str
+    ):
         """Internal async initialization method."""
         load_dotenv()
-
-        assert (
-            model and mcp_url
-        ), "Please set OPEN_SOURCE_MODEL and MCP_URL in your environment variables."
 
         llm = ChatOpenAI(
             base_url="http://localhost:8000/v1",
@@ -41,14 +42,12 @@ class OpenSourceBalatroAgent:
             temperature=0,
         )
 
-        client = MultiServerMCPClient(
-            {
-                "balatro": {
-                    "transport": "streamable_http",
-                    "url": mcp_url,
-                },
+        client = MultiServerMCPClient({
+            "balatro": {
+                "transport": "streamable_http",
+                "url": mcp_url
             }
-        )
+        })
 
         tools = await client.get_tools()
 
