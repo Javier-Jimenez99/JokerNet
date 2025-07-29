@@ -17,7 +17,7 @@ class OpenAIBalatroAgent:
     async def create(
         cls,
         model: str = "gpt-4o-mini",
-        mcp_url: str = "http://localhost:8001/mcp",
+        server_name: str = "mouse",
         max_iterations: int = 10
     ):
         """Create and fully initialize a BalatroAgent instance."""
@@ -25,10 +25,10 @@ class OpenAIBalatroAgent:
         instance.max_iterations = (
             max_iterations  # ✅ Permitir configuración personalizada
         )
-        await instance._initialize(model, mcp_url)
+        await instance._initialize(model, server_name)
         return instance
 
-    async def _initialize(self, model: str, mcp_url: str):
+    async def _initialize(self, model: str, server_name: str):
         """Internal async initialization method."""
         load_dotenv()
             
@@ -65,7 +65,7 @@ class OpenAIBalatroAgent:
 
         self.agent = create_react_agent(
             model=llm,
-            tools=await client.get_tools(),
+            tools=await client.get_tools(server_name=server_name),
             debug=False,
             prompt=load_agent_prompt(),
         )

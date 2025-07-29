@@ -3,7 +3,7 @@ from streamlit.components.v1 import html
 import requests
 import time 
 import asyncio
-from agents import OpenAIBalatroAgent
+from agents import OpenAIBalatroAgent, OpenSourceBalatroAgent
 
 def start_balatro():
      """Start the Balatro game in a remote desktop environment."""
@@ -39,9 +39,25 @@ def restart_balatro():
 def create_agent():
     """Create the agent using asyncio.run to handle async initialization."""
     async def _create_agent():
-        return await OpenAIBalatroAgent.create()
+        agent_type = st.session_state.get("agent_type", "OpenAI")
+        mcp_type = st.session_state.get("mcp_type", "mouse")
+        
+        if agent_type == "OpenAI":
+            return await OpenAIBalatroAgent.create(server_name=mcp_type)
+        else:  # OpenSource
+            return await OpenSourceBalatroAgent.create(server_name=mcp_type)
     
     return asyncio.run(_create_agent())
+
+def recreate_agent():
+    """Recreate the agent when configuration changes."""
+    # Clear the cached agent
+    create_agent.clear()
+    # Create new agent with current configuration
+    with st.spinner("Reconfigurando agente IA..."):
+        st.session_state.agent = create_agent()
+    # Clear chat history when changing agent
+    st.session_state.chat_history = []
 
 def init_session_state() -> None:
      """Initialize session state with chat history and agent."""
@@ -49,6 +65,10 @@ def init_session_state() -> None:
           st.session_state.game_started = False
      if "chat_history" not in st.session_state:
           st.session_state.chat_history = []
+     if "agent_type" not in st.session_state:
+          st.session_state.agent_type = "OpenAI"
+     if "mcp_type" not in st.session_state:
+          st.session_state.mcp_type = "mouse"
      if "agent" not in st.session_state:
           # Mostrar spinner mientras se crea el agente
           with st.spinner("Inicializando agente IA..."):
@@ -108,6 +128,47 @@ if __name__ == "__main__":
           start_game()
 
      st.title("🃏 Balatro - Escritorio Remoto")
+
+     # Sección de configuración
+     with st.expander("⚙️ Configuración del Agente", expanded=False):
+          col1, col2 = st.columns(2)
+          
+          with col1:
+               new_agent_type = st.selectbox(
+                    "Tipo de Agente:",
+                    ["OpenAI", "OpenSource"],
+                    index=0 if st.session_state.agent_type == "OpenAI" else 1,
+                    help="Selecciona el tipo de agente IA a utilizar"
+               )
+          
+          with col2:
+               new_mcp_type = st.selectbox(
+                    "Tipo de MCP:",
+                    ["mouse", "gamepad"],
+                    index=0 if st.session_state.mcp_type == "mouse" else 1,
+                    help="Selecciona el tipo de control: mouse para control de cursor o gamepad para control tipo joystick"
+               )
+          
+          # Detectar cambios en la configuración
+          config_changed = (
+               new_agent_type != st.session_state.agent_type or 
+               new_mcp_type != st.session_state.mcp_type
+          )
+          
+          if config_changed:
+               col_btn1, col_btn2 = st.columns(2)
+               with col_btn1:
+                    if st.button("🔄 Aplicar Configuración", type="primary"):
+                         st.session_state.agent_type = new_agent_type
+                         st.session_state.mcp_type = new_mcp_type
+                         recreate_agent()
+                         st.success("Configuración aplicada exitosamente!")
+                         st.rerun()
+               with col_btn2:
+                    if st.button("❌ Cancelar"):
+                         st.rerun()
+          else:
+               st.info(f"🤖 Agente actual: **{st.session_state.agent_type}** | 🎮 MCP: **{st.session_state.mcp_type}**")
 
      columns = st.columns(2)
      with columns[0]:

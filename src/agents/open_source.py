@@ -18,19 +18,19 @@ class OpenSourceBalatroAgent:
     async def create(
         cls,
         model: str = "unsloth/Qwen2.5-VL-7B-Instruct-bnb-4bit",
-        mcp_url: str = "http://localhost:8001/mcp",
+        server_name: str = "mouse",
         max_iterations: int = 10
     ):
         """Create and fully initialize a BalatroAgent instance."""
         instance = cls()
         instance.max_iterations = max_iterations
-        await instance._initialize(model, mcp_url)
+        await instance._initialize(model, server_name)
         return instance
 
     async def _initialize(
         self, 
         model: str, 
-        mcp_url: str
+        server_name: str
     ):
         """Internal async initialization method."""
         load_dotenv()
@@ -43,13 +43,17 @@ class OpenSourceBalatroAgent:
         )
 
         client = MultiServerMCPClient({
-            "balatro": {
+            "mouse": {
                 "transport": "streamable_http",
-                "url": mcp_url
+                "url": "http://localhost:8000/mouse/mcp"
+            },
+            "gamepad": {
+                "transport": "streamable_http",
+                "url": "http://localhost:8000/gamepad/mcp"
             }
         })
 
-        tools = await client.get_tools()
+        tools = await client.get_tools(server_name=server_name)
 
         system_contents = create_hermes_system_message(tools)
         system_contents.append({"type": "text", "text": load_agent_prompt()})
