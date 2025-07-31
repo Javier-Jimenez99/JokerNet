@@ -120,11 +120,11 @@ def create_agent():
      return asyncio.run(_create())
 
 def recreate_agent():
-    """Recrear agente cuando cambia la configuración."""
-    create_agent.clear()
-    with st.spinner("Reconfigurando agente IA..."):
-        st.session_state.agent = create_agent()
-    st.session_state.chat_history = []
+     """Recrear agente cuando cambia la configuración."""
+     create_agent.clear()
+     with st.spinner("Reconfigurando agente IA..."):
+          st.session_state.agent = create_agent()
+     st.session_state.chat_history = []
 
 def init_session_state() -> None:
      """Inicializar estado de la sesión."""
@@ -150,20 +150,22 @@ def display_messages() -> None:
 @st.fragment
 def chat_block() -> None:
      # Contenedor con altura fija para el chat
-     with st.container(height=700):
+     with st.container(height=700):  # Reducido un poco para dar espacio al input
+          display_messages()
 
+          tools_execution = st.empty()
+
+          # Input del usuario al final
           if user_input := st.chat_input(placeholder="Escribe tu mensaje…"):
                # Añadir mensaje del usuario
-               #st.session_state.chat_history.append({"role": "user", "content": user_input})
+               st.session_state.chat_history.append({"role": "user", "content": user_input})
 
                # Llamar al agente con callback para mostrar herramientas
                with st.chat_message("assistant"):
-                    msg_placeholder = st.empty()
-
                     config = {
                          "recursion_limit": MAX_ITERATIONS,  # Máximo de iteraciones
                          "configurable": {"max_iterations": MAX_ITERATIONS},
-                         "callbacks": [get_streamlit_cb(st.empty())]
+                         "callbacks": [get_streamlit_cb(tools_execution)]
                     }
                     
                     # Llamar al agente
@@ -175,11 +177,13 @@ def chat_block() -> None:
                     )
 
                     last_msg = response["messages"][-1].content
+                    st.session_state.chat_history.append({"role": "assistant", "content": last_msg})
 
                     # Debug: mostrar la estructura de la respuesta
-                    msg_placeholder.write(last_msg)
+                    #msg_placeholder.write(last_msg)
 
-               #st.rerun(scope="fragment")
+               # Rerun para mostrar el nuevo mensaje
+               st.rerun(scope="fragment")
 
 if __name__ == "__main__":
      st.set_page_config(layout="wide", page_title="Balatro - Escritorio Remoto")

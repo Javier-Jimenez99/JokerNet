@@ -78,7 +78,7 @@ def load_agent_prompt(control_type: str = "mouse") -> str:
     
     # Cargar el template de controles específico
     if control_type == "mouse":
-        controls_template = env.get_template("controls/mouse_keyboard.jinja")
+        controls_template = env.get_template("controls/mouse.jinja")
     elif control_type == "gamepad":
         controls_template = env.get_template("controls/gamepad.jinja")
     else:

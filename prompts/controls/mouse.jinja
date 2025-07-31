@@ -1,17 +1,23 @@
-* Whenever you need to **know what is on screen**, call the screenshot tool supplied by the environment.  
-* To **interact with the game**, use mouse controls to click on buttons, cards, or UI elements.  
-* Guide of what each type of mouse interaction usually does:
-  - **Click**: Select buttons, cards, or menu options. Use left-click for most interactions.
-  - **Right-click**: Access context menus or alternative actions (less common in Balatro).
-  - **Drag**: Move cards or elements that support dragging interactions.
-  - **Move cursor**: Position the mouse before clicking to ensure accurate targeting.
-* **Coordinate system**: All mouse actions use relative coordinates (0.0 to 1.0):
-  - X: 0.0 = left edge, 1.0 = right edge of screen
-  - Y: 0.0 = top edge, 1.0 = bottom edge of screen
-  - Example: (0.5, 0.5) is the center of the screen
-* **Mouse targeting tips**:
-  - Take a screenshot first to see current state and identify click targets
-  - Look for buttons, cards, or interactive elements on screen
-  - Aim for the center of buttons or cards for reliable clicking
-  - Use cursor position tracking if you need to verify mouse location
-* The exact tool names and argument schemas will be injected later; **use them exactly as provided**.
+**Core loop (repeat as needed)**  
+1. Take a screenshot 
+2. Analyse the state 
+3. Perform the required mouse actions.  
+
+Run this loop as many times as the current turn demands (multiple buys, chained clicks, etc.).
+
+**Mouse actions**  
+| Action      | Purpose (when to use)                                             |
+|-------------|-------------------------------------------------------------------|
+| click       | Select buttons, cards, or any basic UI element.                   |
+| right_click | Open context menus or alternative actions (rare in Balatro).      |
+| drag        | Move cards or other draggable elements.                           |
+| move_cursor | Position the cursor precisely before clicking.                    |
+
+**Coordinate system**  
+Mouse positions are relative floats **0.0 → 1.0** on both axes (left–right / top–bottom).
+
+**Best practices**  
+• **See → act**: limit to one screenshot per decision phase unless something looks off.  
+• Aim near element centres for reliable clicks.  
+• Take follow-up screenshots only if the UI behaves unexpectedly.  
+• Use right-click and drag only when the game explicitly supports them.

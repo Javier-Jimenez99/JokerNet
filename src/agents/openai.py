@@ -47,11 +47,13 @@ async def create_openai_agent(
 
     tools = await client.get_tools(server_name=server_name)
 
+    system_prompt = load_agent_prompt(control_type=server_name)
+
     agent = create_react_agent(
         model=llm,
         tools=tools,
         debug=False,
-        prompt=load_agent_prompt(control_type=server_name),
+        prompt=system_prompt,
     )
 
     return agent, tools
