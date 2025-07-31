@@ -45,11 +45,11 @@ class OpenSourceBalatroAgent:
         client = MultiServerMCPClient({
             "mouse": {
                 "transport": "streamable_http",
-                "url": "http://localhost:8000/mouse/mcp"
+                "url": "http://localhost:8001/mouse/mcp"
             },
             "gamepad": {
                 "transport": "streamable_http",
-                "url": "http://localhost:8000/gamepad/mcp"
+                "url": "http://localhost:8001/gamepad/mcp"
             }
         })
 

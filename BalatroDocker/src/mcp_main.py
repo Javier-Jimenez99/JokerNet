@@ -1,10 +1,23 @@
 """
-MCP (Model Context Protocol) Server for Balatro game control.
+Standalone MCP (Model Context Protocol) Server for Balatro game control.
 
 This server provides MCP tools for gamepad control and mouse interaction
-with the Balatro game through the FastAPI backend.
+with the Balatro game. Runs independently from the REST API.
 """
+
+# Core system initialization
+from api.utils.system import wait_for_x11, ensure_xauth
+
+# Initialize X11 system first
+print("Initializing X11 for MCP server...")
+wait_for_x11()
+ensure_xauth()
+print("X11 initialization complete for MCP server")
+
 from fastmcp import FastMCP
+import uvicorn
+import contextlib
+from fastapi import FastAPI
 
 # MCP tools
 from mcp_server.tools.gamepad_tools import press_buttons, get_screen
@@ -80,3 +93,53 @@ def mouse_drag_tool(start_x: float, start_y: float, end_x: float, end_y: float, 
 def get_screen_with_cursor_tool():
     """Get a screenshot with the current mouse cursor position highlighted."""
     return get_screen_with_cursor()
+
+def create_fastapi_app() -> FastAPI:
+    # Create individual MCP apps
+    gamepad_mcp_app = gamepad_mcp.http_app()
+    mouse_mcp_app = mouse_mcp.http_app()
+
+    # Create combined MCP application
+    @contextlib.asynccontextmanager
+    async def lifespan(app: FastAPI):
+        async with gamepad_mcp_app.lifespan(app):
+            async with mouse_mcp_app.lifespan(app):
+                yield
+
+    app = FastAPI(
+        title="Balatro MCP Server",
+        description="""
+        MCP (Model Context Protocol) Server for Balatro game control.
+        
+        Provides AI agents with tools for:
+        - Gamepad control
+        - Mouse interaction
+        - Screenshot capture
+        """,
+        version="1.0.0",
+        lifespan=lifespan
+    )
+
+    # Mount the MCP servers
+    app.mount("/gamepad", gamepad_mcp_app)
+    app.mount("/mouse", mouse_mcp_app)
+
+    # Health check for MCP server
+    @app.get("/health")
+    async def health_check():
+        """MCP server health check."""
+        return {
+            "status": "healthy",
+            "services": {
+                "gamepad_mcp": "running",
+                "mouse_mcp": "running"
+            }
+        }
+    
+    return app
+
+
+# Main execution for standalone MCP server
+if __name__ == "__main__":
+    app = create_fastapi_app()
+    uvicorn.run(app, host="0.0.0.0", port=8001)

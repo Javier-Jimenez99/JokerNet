@@ -1,3 +1,19 @@
+"""
+Pure REST API server for Balatro game control.
+
+This server provides REST API endpoints for controlling the Balatro game.
+No MCP integration - only HTTP REST endpoints.
+"""
+
+# Core system initialization
+from api.utils.system import wait_for_x11, ensure_xauth
+
+# Initialize X11 system first
+print("Initializing X11 for API server...")
+wait_for_x11()
+ensure_xauth()
+print("X11 initialization complete for API server")
+
 # API controllers (import after X11 initialization)
 from api.controllers import (
     game_controller,
@@ -16,26 +32,22 @@ from api.models.requests import (
 )
 
 import time
+import uvicorn
 from fastapi import FastAPI
 
-def create_fastapi_app(lifespan=None):
+def create_fastapi_app():
 
     # Create main application
     app = FastAPI(
-        title="Balatro Game Control API with MCP",
+        title="Balatro Game Control REST API",
         description="""
-        Unified API for controlling Balatro game through:
-        - REST API endpoints for direct control
-        - MCP (Model Context Protocol) server for AI agent integration
+        REST API for controlling Balatro game through HTTP endpoints.
         
         Uses relative coordinates (0-1) where 0 represents top/left edge and 1 represents bottom/right edge.
-        
-        MCP Endpoint: /mcp - MCP server for gamepad and mouse control tools
         """,
         version="1.0.0",
         docs_url="/docs",
-        redoc_url="/redoc",
-        lifespan=lifespan
+        redoc_url="/redoc"
     )
 
     # Game Management Endpoints
@@ -105,9 +117,13 @@ def create_fastapi_app(lifespan=None):
             "status": "healthy", 
             "timestamp": time.time(),
             "services": {
-                "rest_api": "running",
-                "mcp_server": "running"
+                "rest_api": "running"
             }
         }
     
     return app
+
+# Main execution for standalone API server
+if __name__ == "__main__":
+    app = create_fastapi_app()
+    uvicorn.run(app, host="0.0.0.0", port=8000)
