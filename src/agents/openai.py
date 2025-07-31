@@ -51,7 +51,7 @@ async def create_openai_agent(
         model=llm,
         tools=tools,
         debug=False,
-        prompt=load_agent_prompt(),
+        prompt=load_agent_prompt(control_type=server_name),
     )
 
     return agent, tools

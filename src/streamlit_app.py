@@ -5,7 +5,6 @@ import time
 import asyncio
 from agents import create_openai_agent, OpenSourceBalatroAgent
 from langchain_community.callbacks.streamlit import StreamlitCallbackHandler
-from langchain.agents import AgentExecutor
 from typing import Callable, TypeVar
 import inspect
 
@@ -13,9 +12,56 @@ from streamlit.runtime.scriptrunner import add_script_run_ctx, get_script_run_ct
 from streamlit.delta_generator import DeltaGenerator
 
 from langchain_core.callbacks.base import BaseCallbackHandler
-from langchain_community.callbacks.streamlit import StreamlitCallbackHandler
+from streamlit.external.langchain import StreamlitCallbackHandler
+from langgraph.errors import GraphRecursionError
 
-MAX_ITERATIONS = 5
+MAX_ITERATIONS = 10
+
+import base64
+import io
+
+class SafeStreamlitCallback (StreamlitCallbackHandler):
+     """Callback que detecta imágenes en base64 y las muestra correctamente."""
+
+     # Si usas langgraph, asegúrate de coincidir con la firma correcta:
+     # def on_tool_end(self, output: Any, *, **kwargs):
+     def on_tool_end(self, output, **kwargs):
+          # Es un ToolMessage de LangChain     
+          artifacts = output.artifact
+          updated_artifacts = []
+          for artifact in artifacts:
+               # Si es una imagen en base64, la renderizamos
+               if artifact.type == "image":
+                    if isinstance(artifact.data, str) and self._looks_like_b64(artifact.data):
+                         self._render_b64(artifact.data)
+                    else:
+                         st.error("El artefacto no es una imagen válida en base64.")
+               else:
+                    updated_artifacts.append(artifact)
+
+          output.artifact = updated_artifacts  # Actualizar los artefactos sin imágenes
+
+          # Fallback: comportamiento original
+          super().on_tool_end(output, **kwargs)
+
+     # ---------- helpers ----------
+     @staticmethod
+     def _looks_like_b64(s: str) -> bool:
+          return (
+               s.startswith("data:image")
+               or (len(s) % 4 == 0 and all(c in "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=\n\r" for c in s[:64]))
+          )
+
+     def _render_b64(self, data: str):
+          # Quita encabezado 'data:image/png;base64,' si existiera
+          head, _, body = data.partition(",")
+          b = base64.b64decode(body if _ else data)
+
+          # Mostrar en Streamlit sin saturar el log
+          with st.expander("Imagen generada", expanded=False):
+               st.image(io.BytesIO(b))
+          # Si quieres guardar temporalmente:
+          # with open("tmp.png", "wb") as f: f.write(b)
 
 def get_streamlit_cb(parent_container: DeltaGenerator) -> BaseCallbackHandler:
     fn_return_type = TypeVar('fn_return_type')
@@ -28,7 +74,7 @@ def get_streamlit_cb(parent_container: DeltaGenerator) -> BaseCallbackHandler:
 
         return wrapper
 
-    st_cb = StreamlitCallbackHandler(parent_container)
+    st_cb = SafeStreamlitCallback(parent_container)
 
     for method_name, method_func in inspect.getmembers(st_cb, predicate=inspect.ismethod):
         if method_name.startswith('on_'):
@@ -67,7 +113,6 @@ def create_agent():
      async def _create():
           if agent_type == "OpenAI":
                agent, tools = await create_openai_agent(server_name=mcp_type)
-               #return AgentExecutor(agent=agent, tools=tools, verbose=True)
                return agent
           else:
                return await OpenSourceBalatroAgent.create(server_name=mcp_type)
@@ -116,8 +161,8 @@ def chat_block() -> None:
                     msg_placeholder = st.empty()
 
                     config = {
-                         "recursion_limit": 20,  # Máximo de iteraciones
-                         "configurable": {"max_iterations": 20},
+                         "recursion_limit": MAX_ITERATIONS,  # Máximo de iteraciones
+                         "configurable": {"max_iterations": MAX_ITERATIONS},
                          "callbacks": [get_streamlit_cb(st.empty())]
                     }
                     

@@ -56,7 +56,7 @@ class OpenSourceBalatroAgent:
         tools = await client.get_tools(server_name=server_name)
 
         system_contents = create_hermes_system_message(tools)
-        system_contents.append({"type": "text", "text": load_agent_prompt()})
+        system_contents.append({"type": "text", "text": load_agent_prompt(control_type=server_name)})
 
         self.agent = create_react_agent(
             model=llm,

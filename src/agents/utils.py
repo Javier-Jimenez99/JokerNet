@@ -5,6 +5,9 @@ from qwen_agent.llm.fncall_prompts.nous_fncall_prompt import (
     Message,
     ContentItem,
 )
+from jinja2 import Environment, FileSystemLoader
+import os
+from pathlib import Path
 
 
 def langchain_tools_to_qwen_functions(langchain_tools):
@@ -67,7 +70,28 @@ def create_hermes_system_message(tools) -> list:
     return contents
 
 
-def load_agent_prompt() -> str:
-    """Load the agent prompt from a file."""
-    with open("prompts/general_prompt.txt", "r") as file:
-        return file.read()
+def load_agent_prompt(control_type: str = "mouse") -> str:
+    """Load and render the agent prompt from Jinja templates."""
+    prompts_dir = "./prompts"
+    
+    # Configurar el entorno de Jinja2
+    env = Environment(loader=FileSystemLoader(prompts_dir))
+    
+    # Cargar el template principal
+    general_template = env.get_template("general.jinja")
+    
+    # Cargar el template de controles específico
+    if control_type == "mouse":
+        controls_template = env.get_template("controls/mouse_keyboard.jinja")
+    elif control_type == "gamepad":
+        controls_template = env.get_template("controls/gamepad.jinja")
+    else:
+        raise ValueError(f"Unsupported control type: {control_type}")
+    
+    # Renderizar el template de controles
+    controls_content = controls_template.render()
+    
+    # Renderizar el template principal con los controles
+    full_prompt = general_template.render(controls=controls_content)
+    
+    return full_prompt
