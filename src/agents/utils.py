@@ -1,13 +1,9 @@
-from langchain.agents import tool
-from langchain_core.messages import SystemMessage
 from qwen_agent.llm.fncall_prompts.nous_fncall_prompt import (
     NousFnCallPrompt,
     Message,
     ContentItem,
 )
 from jinja2 import Environment, FileSystemLoader
-import os
-from pathlib import Path
 
 
 def langchain_tools_to_qwen_functions(langchain_tools):
