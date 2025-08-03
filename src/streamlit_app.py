@@ -158,7 +158,12 @@ def chat_block() -> None:
           # Input del usuario al final
           if user_input := st.chat_input(placeholder="Escribe tu mensaje…"):
                # Añadir mensaje del usuario
-               st.session_state.chat_history.append({"role": "user", "content": user_input})
+               history = st.session_state.get("chat_history", [])
+               history.append({"role": "user", "content": user_input})
+               st.session_state.chat_history = history
+
+               with st.chat_message("user"):
+                    st.write(user_input)
 
                # Llamar al agente con callback para mostrar herramientas
                with st.chat_message("assistant"):
@@ -171,7 +176,9 @@ def chat_block() -> None:
                     # Llamar al agente
                     response = asyncio.run(
                          st.session_state.agent.ainvoke(
-                              input={"input": user_input},
+                              input={
+                                   "messages": history
+                              },
                               config=config
                          )
                     )
