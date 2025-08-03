@@ -22,14 +22,15 @@ from fastapi import FastAPI
 # MCP tools
 from mcp_server.tools.gamepad_tools import (
     press_buttons as _press_buttons,
-    get_screen as _get_screen
+    get_screen as _get_screen,
 )
 from mcp_server.tools.mouse_tools import (
     get_mouse_position as _get_mouse_position, 
     mouse_click as _mouse_click, 
     mouse_move as _mouse_move, 
     mouse_drag as _mouse_drag, 
-    get_screen_with_cursor as _get_screen_with_cursor
+    get_screen_with_cursor as _get_screen_with_cursor,
+    get_screen_dimensions as _get_screen_dimensions,
 )
 
 # Initialize MCP server
@@ -39,57 +40,59 @@ gamepad_mcp = FastMCP(
 
 # Gamepad Tools
 @gamepad_mcp.tool(
-    description="Press a sequence of buttons to control the Balatro game. These buttons are from Xbox controller: A, B, X, Y, LEFT, RIGHT, UP, DOWN, START, SELECT, RB, RT, LB, LT. Example: 'A B LEFT RB'",
+    description="Press a sequence of buttons to control the Balatro game. These buttons are from Xbox controller: A, B, X, Y, LEFT, RIGHT, UP, DOWN, START, SELECT, RB, RT, LB, LT. Example: 'A B LEFT RB'.",
 )
 def press_buttons(sequence: str) -> dict:
-    """Press a sequence of buttons to control the Balatro game."""
     return _press_buttons(sequence)
 
 @gamepad_mcp.tool(
     description="Get a screenshot of the current state of the Balatro game.",
 )
 def get_screen():
-    """Get a screenshot of the current state of the Balatro game."""
     return _get_screen()
 
 mouse_mcp = FastMCP(
     name="BalatroMouseMCP",
 )
 
+# Get screen dimensions for dynamic descriptions
+def get_screen_info_text():
+    """Get screen dimension text for tool descriptions."""
+    try:
+        dims = _get_screen_dimensions()
+        return f"Screen resolution: {dims['width']}x{dims['height']} pixels. "
+    except:
+        return "Screen resolution: Available via get_mouse_position. "
+
 # Mouse Tools
 @mouse_mcp.tool(
-    description="Get the current mouse position in both absolute and relative coordinates.",
+    description=f"Get the current mouse position in pixel coordinates. Also returns current screen dimensions.",
 )
 def get_mouse_position() -> dict:
-    """Get the current mouse position in both absolute and relative coordinates."""
     return _get_mouse_position()
 
 @mouse_mcp.tool(
-    description="Click at a specific coordinate on the screen using relative coordinates (0-1).",
+    description=f"Click at a specific coordinate on the screen using pixel coordinates. {get_screen_info_text()}Use exact pixel coordinates for precise clicking.",
 )
-def mouse_click(x: float, y: float, button: str = "left", clicks: int = 1) -> dict:
-    """Click at a specific coordinate on the screen using relative coordinates."""
+def mouse_click(x: int, y: int, button: str = "left", clicks: int = 1) -> dict:
     return _mouse_click(x, y, button, clicks)
 
 @mouse_mcp.tool(
-    description="Move the mouse cursor to a specific coordinate using relative coordinates (0-1).",
+    description=f"Move the mouse cursor to a specific coordinate using pixel coordinates. {get_screen_info_text()}Use exact pixel coordinates for precise movement.",
 )
-def mouse_move(x: float, y: float, duration: float = 0.0) -> dict:
-    """Move the mouse cursor to a specific coordinate using relative coordinates."""
+def mouse_move(x: int, y: int, duration: float = 0.0) -> dict:
     return _mouse_move(x, y, duration)
 
 @mouse_mcp.tool(
-    description="Drag the mouse from start coordinates to end coordinates using relative coordinates (0-1).",
+    description=f"Drag the mouse from start coordinates to end coordinates using pixel coordinates. {get_screen_info_text()}Use exact pixel coordinates for precise dragging.",
 )
-def mouse_drag(start_x: float, start_y: float, end_x: float, end_y: float, duration: float = 0.5, button: str = "left") -> dict:
-    """Drag the mouse from start coordinates to end coordinates using relative coordinates."""
+def mouse_drag(start_x: int, start_y: int, end_x: int, end_y: int, duration: float = 0.5, button: str = "left") -> dict:
     return _mouse_drag(start_x, start_y, end_x, end_y, duration, button)
 
 @mouse_mcp.tool(
-    description="Get a screenshot with cursor position visible.",
+    description=f"Get a screenshot with cursor position visible. The cursor is a light green point inside a larger dark green circle, to make it more visible. Use this to see the current game state and plan your next mouse actions using pixel coordinates. {get_screen_info_text()}",
 )
 def get_screen_with_cursor():
-    """Get a screenshot with the current mouse cursor position highlighted."""
     return _get_screen_with_cursor()
 
 def create_fastapi_app() -> FastAPI:

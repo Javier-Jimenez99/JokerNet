@@ -1,23 +1,24 @@
-**Core loop (repeat as needed)**  
-1. Take a screenshot 
-2. Analyse the state 
-3. Perform the required mouse actions.  
+Core loop (repeat as needed)
+• Take a screenshot → analyse what's on screen → perform the next mouse action.
+• After an action, wait briefly; if the action didn't work retry adapting parameters.
 
-Run this loop as many times as the current turn demands (multiple buys, chained clicks, etc.).
+Mouse actions
+• Click: select buttons, cards, tiles, or other UI elements.
+• Drag: move draggable elements when the game clearly expects it.
+• Move cursor: position precisely, then click for small or tricky targets.
 
-**Mouse actions**  
-| Action      | Purpose (when to use)                                             |
-|-------------|-------------------------------------------------------------------|
-| click       | Select buttons, cards, or any basic UI element.                   |
-| right_click | Open context menus or alternative actions (rare in Balatro).      |
-| drag        | Move cards or other draggable elements.                           |
-| move_cursor | Position the cursor precisely before clicking.                    |
+Coordinate system
+• Positions are in PIXEL coordinates (integer values).
+• Screen dimensions are provided by tools - use these to understand the screen size.
+• Always derive targets from the latest screenshot, don't guess or hard-code coordinates.
+• Use exact pixel coordinates based on what you see in screenshots.
 
-**Coordinate system**  
-Mouse positions are relative floats **0.0 → 1.0** on both axes (left–right / top–bottom).
+Targeting & accuracy
+• Aim near the visual centre of the element; ensure the cursor tip lands inside it.
+• If a click fails, adjust slightly and retry after re-checking with a screenshot.
+• Use the screen resolution information provided by tools for accurate targeting.
 
-**Best practices**  
-• **See → act**: limit to one screenshot per decision phase unless something looks off.  
-• Aim near element centres for reliable clicks.  
-• Take follow-up screenshots only if the UI behaves unexpectedly.  
-• Use right-click and drag only when the game explicitly supports them.
+Best practices
+• One screenshot per decision phase is usually enough; take extras only if something looks off or after major actions.
+• Every action should advance the objective (e.g., beat the blind, confirm a purchase, progress dialogue).
+• All coordinates must be in pixels - use exact integer coordinates based on screenshot analysis.

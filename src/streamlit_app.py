@@ -149,48 +149,53 @@ def display_messages() -> None:
 
 @st.fragment
 def chat_block() -> None:
-     # Contenedor con altura fija para el chat
-     with st.container(height=700):  # Reducido un poco para dar espacio al input
+     # Contenedor con altura fija para el chat (solo para mensajes)
+     main_container = st.container(height=650)
+     with main_container:
           display_messages()
+     
+     # Input del usuario fuera del contenedor de mensajes
+     if user_input := st.chat_input(placeholder="Escribe tu mensaje…"):
+          # Añadir mensaje del usuario al historial
+          history = st.session_state.get("chat_history", [])
+          history.append({"role": "user", "content": user_input})
+          st.session_state.chat_history = history
 
-          tools_execution = st.empty()
-
-          # Input del usuario al final
-          if user_input := st.chat_input(placeholder="Escribe tu mensaje…"):
-               # Añadir mensaje del usuario
-               history = st.session_state.get("chat_history", [])
-               history.append({"role": "user", "content": user_input})
-               st.session_state.chat_history = history
-
-               with st.chat_message("user"):
-                    st.write(user_input)
-
-               # Llamar al agente con callback para mostrar herramientas
+          with main_container:
+               st.chat_message("user").markdown(user_input)
+               
                with st.chat_message("assistant"):
                     config = {
-                         "recursion_limit": MAX_ITERATIONS,  # Máximo de iteraciones
+                         "recursion_limit": MAX_ITERATIONS,
                          "configurable": {"max_iterations": MAX_ITERATIONS},
-                         "callbacks": [get_streamlit_cb(tools_execution)]
+                         "callbacks": [get_streamlit_cb(st.empty())]
                     }
                     
-                    # Llamar al agente
-                    response = asyncio.run(
-                         st.session_state.agent.ainvoke(
-                              input={
-                                   "messages": history
-                              },
-                              config=config
+                    try:
+                         # Llamar al agente
+                         response = asyncio.run(
+                              st.session_state.agent.ainvoke(
+                                   input={"messages": history},
+                                   config=config
+                              )
                          )
-                    )
 
-                    last_msg = response["messages"][-1].content
-                    st.session_state.chat_history.append({"role": "assistant", "content": last_msg})
+                         # Debug:
+                         for msg in response["messages"]:
+                              print(f"Message: {msg}")
 
-                    # Debug: mostrar la estructura de la respuesta
-                    #msg_placeholder.write(last_msg)
+                         last_msg = response["messages"][-1].content
 
-               # Rerun para mostrar el nuevo mensaje
-               st.rerun(scope="fragment")
+                         st.markdown(last_msg)
+                         st.session_state.chat_history.append({"role": "assistant", "content": last_msg})
+                         
+                    except Exception as e:
+                         error_msg = f"Error al procesar la solicitud: {str(e)}"
+                         st.markdown(error_msg)
+                         st.session_state.chat_history.append({"role": "assistant", "content": error_msg})
+
+          # Rerun para actualizar la vista
+          #st.rerun(scope="fragment")
 
 if __name__ == "__main__":
      st.set_page_config(layout="wide", page_title="Balatro - Escritorio Remoto")

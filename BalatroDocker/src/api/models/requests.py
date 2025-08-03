@@ -23,16 +23,16 @@ class GamepadButtonsRequest(BaseModel):
 
 class MouseClickRequest(BaseModel):
     """Request model for mouse clicks."""
-    x: float  # Relative coordinate (0-1)
-    y: float  # Relative coordinate (0-1)
+    x: int  # Pixel coordinate
+    y: int  # Pixel coordinate
     button: str = "left"
     clicks: int = 1
     
     class Config:
         json_schema_extra = {
             "example": {
-                "x": 0.5,
-                "y": 0.5,
+                "x": 960,
+                "y": 540,
                 "button": "left",
                 "clicks": 1
             }
@@ -41,15 +41,15 @@ class MouseClickRequest(BaseModel):
 
 class MouseMoveRequest(BaseModel):
     """Request model for mouse movement."""
-    x: float  # Relative coordinate (0-1)
-    y: float  # Relative coordinate (0-1)
+    x: int  # Pixel coordinate
+    y: int  # Pixel coordinate
     duration: float = 0.0
     
     class Config:
         json_schema_extra = {
             "example": {
-                "x": 0.5,
-                "y": 0.5,
+                "x": 960,
+                "y": 540,
                 "duration": 0.5
             }
         }
@@ -57,20 +57,20 @@ class MouseMoveRequest(BaseModel):
 
 class MouseDragRequest(BaseModel):
     """Request model for mouse dragging."""
-    start_x: float  # Relative coordinate (0-1)
-    start_y: float  # Relative coordinate (0-1)
-    end_x: float    # Relative coordinate (0-1)
-    end_y: float    # Relative coordinate (0-1)
+    start_x: int  # Pixel coordinate
+    start_y: int  # Pixel coordinate
+    end_x: int    # Pixel coordinate
+    end_y: int    # Pixel coordinate
     duration: float = 0.5
     button: str = "left"
     
     class Config:
         json_schema_extra = {
             "example": {
-                "start_x": 0.3,
-                "start_y": 0.3,
-                "end_x": 0.7,
-                "end_y": 0.7,
+                "start_x": 300,
+                "start_y": 300,
+                "end_x": 700,
+                "end_y": 700,
                 "duration": 0.5,
                 "button": "left"
             }

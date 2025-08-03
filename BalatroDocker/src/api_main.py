@@ -80,22 +80,22 @@ def create_fastapi_app():
     # Mouse Control Endpoints
     @app.post("/mouse/click", tags=["Mouse Control"], summary="Click at Coordinates")
     async def mouse_click(request: MouseClickRequest):
-        """Click at specific coordinates using relative positioning (0-1)."""
+        """Click at specific coordinates using pixel positioning."""
         return await mouse_controller.mouse_click(request)
 
     @app.post("/mouse/move", tags=["Mouse Control"], summary="Move Mouse Cursor")
     async def mouse_move(request: MouseMoveRequest):
-        """Move mouse cursor to specific coordinates using relative positioning (0-1)."""
+        """Move mouse cursor to specific coordinates using pixel positioning."""
         return await mouse_controller.mouse_move(request)
 
     @app.post("/mouse/drag", tags=["Mouse Control"], summary="Drag Mouse")
     async def mouse_drag(request: MouseDragRequest):
-        """Drag from start coordinates to end coordinates using relative positioning (0-1)."""
+        """Drag from start coordinates to end coordinates using pixel positioning."""
         return await mouse_controller.mouse_drag(request)
 
     @app.get("/mouse/position", tags=["Mouse Control"], summary="Get Mouse Position")
     async def get_mouse_position():
-        """Get current mouse position in both absolute and relative coordinates."""
+        """Get current mouse position in pixel coordinates."""
         return await mouse_controller.get_mouse_position()
 
     # Screenshot Endpoints

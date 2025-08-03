@@ -7,12 +7,33 @@ from fastmcp.utilities.types import Image
 FASTAPI_URL = "http://localhost:8000"
 
 
-def get_mouse_position() -> dict:
+def get_screen_dimensions() -> dict:
     """
-    Get the current mouse position in both absolute and relative coordinates.
+    Get current screen dimensions.
     
     Returns:
-        dict: Dictionary containing absolute coordinates, relative coordinates (0-1), and screen size
+        dict: Dictionary containing screen width and height
+    """
+    try:
+        response = requests.get(f"{FASTAPI_URL}/mouse/position", timeout=10)
+        
+        if response.status_code == 200:
+            data = response.json()
+            return data.get("screen_size", {"width": 1920, "height": 1080})
+        else:
+            # Fallback dimensions if request fails
+            return {"width": 1920, "height": 1080}
+    except Exception:
+        # Fallback dimensions if request fails
+        return {"width": 1920, "height": 1080}
+
+
+def get_mouse_position() -> dict:
+    """
+    Get the current mouse position in pixel coordinates.
+    
+    Returns:
+        dict: Dictionary containing pixel coordinates and screen size
     """
     try:
         response = requests.get(f"{FASTAPI_URL}/mouse/position", timeout=10)
@@ -36,13 +57,13 @@ def get_mouse_position() -> dict:
         }
 
 
-def mouse_click(x: float, y: float, button: str = "left", clicks: int = 1) -> dict:
+def mouse_click(x: int, y: int, button: str = "left", clicks: int = 1) -> dict:
     """
-    Click at a specific coordinate on the screen using relative coordinates.
+    Click at a specific coordinate on the screen using pixel coordinates.
     
     Args:
-        x (float): Relative X coordinate (0.0 = left edge, 1.0 = right edge)
-        y (float): Relative Y coordinate (0.0 = top edge, 1.0 = bottom edge)
+        x (int): X coordinate in pixels
+        y (int): Y coordinate in pixels
         button (str): Mouse button to click ('left', 'right', 'middle')
         clicks (int): Number of clicks (default: 1)
     
@@ -78,13 +99,13 @@ def mouse_click(x: float, y: float, button: str = "left", clicks: int = 1) -> di
         }
 
 
-def mouse_move(x: float, y: float, duration: float = 0.0) -> dict:
+def mouse_move(x: int, y: int, duration: float = 0.0) -> dict:
     """
-    Move the mouse cursor to a specific coordinate using relative coordinates.
+    Move the mouse cursor to a specific coordinate using pixel coordinates.
     
     Args:
-        x (float): Relative X coordinate (0.0 = left edge, 1.0 = right edge)
-        y (float): Relative Y coordinate (0.0 = top edge, 1.0 = bottom edge)
+        x (int): X coordinate in pixels
+        y (int): Y coordinate in pixels
         duration (float): Duration of the movement in seconds (default: 0.0 for instant)
     
     Returns:
@@ -118,15 +139,15 @@ def mouse_move(x: float, y: float, duration: float = 0.0) -> dict:
         }
 
 
-def mouse_drag(start_x: float, start_y: float, end_x: float, end_y: float, duration: float = 0.5, button: str = "left") -> dict:
+def mouse_drag(start_x: int, start_y: int, end_x: int, end_y: int, duration: float = 0.5, button: str = "left") -> dict:
     """
-    Drag the mouse from start coordinates to end coordinates using relative coordinates.
+    Drag the mouse from start coordinates to end coordinates using pixel coordinates.
     
     Args:
-        start_x (float): Starting relative X coordinate (0.0 = left edge, 1.0 = right edge)
-        start_y (float): Starting relative Y coordinate (0.0 = top edge, 1.0 = bottom edge)
-        end_x (float): Ending relative X coordinate (0.0 = left edge, 1.0 = right edge)
-        end_y (float): Ending relative Y coordinate (0.0 = top edge, 1.0 = bottom edge)
+        start_x (int): Starting X coordinate in pixels
+        start_y (int): Starting Y coordinate in pixels
+        end_x (int): Ending X coordinate in pixels
+        end_y (int): Ending Y coordinate in pixels
         duration (float): Duration of the drag in seconds (default: 0.5)
         button (str): Mouse button to use for dragging ('left', 'right', 'middle')
     

@@ -8,7 +8,6 @@ from .utils import load_agent_prompt
 
 
 async def create_openai_agent(
-    model: str = "gpt-4o-mini",
     server_name: str = "mouse",
 ):
     """Create and fully initialize an OpenAI BalatroAgent instance."""
@@ -17,13 +16,14 @@ async def create_openai_agent(
     azure_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
     openai_api_key = os.getenv("AZURE_OPENAI_API_KEY")
     openai_api_version = os.getenv("AZURE_OPENAI_API_VERSION")
+    openai_model = os.getenv("AZURE_OPENAI_MODEL", "gpt-4.1")
 
     assert (
         azure_endpoint and openai_api_key and openai_api_version
     ), "Please set AZURE_OPENAI_ENDPOINT, AZURE_OPENAI_API_KEY, and AZURE_OPENAI_API_VERSION in your environment variables."
 
     llm = AzureChatOpenAI(
-        azure_deployment=model,
+        azure_deployment=openai_model,
         azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
         openai_api_key=os.getenv("AZURE_OPENAI_API_KEY"),
         openai_api_version=os.getenv(
