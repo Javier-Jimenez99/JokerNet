@@ -14,8 +14,9 @@ from streamlit.delta_generator import DeltaGenerator
 from langchain_core.callbacks.base import BaseCallbackHandler
 from streamlit.external.langchain import StreamlitCallbackHandler
 from langgraph.errors import GraphRecursionError
+import json
 
-MAX_ITERATIONS = 10
+MAX_ITERATIONS = 25
 
 import base64
 import io
@@ -23,13 +24,18 @@ import io
 class SafeStreamlitCallback (StreamlitCallbackHandler):
      """Callback que detecta imágenes en base64 y las muestra correctamente."""
 
+     def __init__(self, parent_container, debug_mode=False):
+          super().__init__(parent_container)
+          self.debug_mode = debug_mode
+
      # Si usas langgraph, asegúrate de coincidir con la firma correcta:
      # def on_tool_end(self, output: Any, *, **kwargs):
      def on_tool_end(self, output, **kwargs):
           # Es un ToolMessage de LangChain     
-          artifacts = output.artifact
           updated_artifacts = []
-          for artifact in artifacts:
+          print(type(output))
+          for artifact in output.artifact:
+               print(f"artifact type:", artifact.type)
                # Si es una imagen en base64, la renderizamos
                if artifact.type == "image":
                     if isinstance(artifact.data, str) and self._looks_like_b64(artifact.data):
@@ -38,8 +44,6 @@ class SafeStreamlitCallback (StreamlitCallbackHandler):
                          st.error("El artefacto no es una imagen válida en base64.")
                else:
                     updated_artifacts.append(artifact)
-
-          output.artifact = updated_artifacts  # Actualizar los artefactos sin imágenes
 
           # Fallback: comportamiento original
           super().on_tool_end(output, **kwargs)
@@ -60,10 +64,34 @@ class SafeStreamlitCallback (StreamlitCallbackHandler):
           # Mostrar en Streamlit sin saturar el log
           with st.expander("Imagen generada", expanded=False):
                st.image(io.BytesIO(b))
-          # Si quieres guardar temporalmente:
-          # with open("tmp.png", "wb") as f: f.write(b)
 
-def get_streamlit_cb(parent_container: DeltaGenerator) -> BaseCallbackHandler:
+     def on_chat_model_start(self, serialized, messages, **kwargs):
+          # Solo mostrar en modo debug
+          if not self.debug_mode:
+               return
+               
+          # messages: List[List[BaseMessage]] (batch-first)
+          batch = messages[0]
+          snapshot = []
+          for m in batch:
+               if isinstance(m.content, list):
+                    # Multimodal: text + image blocks, etc.
+                    parts = []
+                    for p in m.content:
+                         if isinstance(p, dict) and p.get("type") in ("image_url", "input_image", "image"):
+                              # no muestres el base64 entero
+                              preview = (p.get("image_url", {}).get("url") or "")[:80]
+                              parts.append({"type": p["type"], "preview": preview})
+                         else:
+                              parts.append({"type": p.get("type", "text"), "text": str(p.get("text", ""))[:160]})
+                    snapshot.append({"role": m.type, "content": parts})
+               else:
+                    snapshot.append({"role": m.type, "text": str(m.content)[:400]})
+
+          st.caption("📤 Mensajes enviados al modelo:")
+          st.code(json.dumps(snapshot, ensure_ascii=False, indent=2))
+
+def get_streamlit_cb(parent_container: DeltaGenerator, debug_mode: bool = False) -> BaseCallbackHandler:
     fn_return_type = TypeVar('fn_return_type')
     def add_streamlit_context(fn: Callable[..., fn_return_type]) -> Callable[..., fn_return_type]:
         ctx = get_script_run_ctx()
@@ -74,7 +102,7 @@ def get_streamlit_cb(parent_container: DeltaGenerator) -> BaseCallbackHandler:
 
         return wrapper
 
-    st_cb = SafeStreamlitCallback(parent_container)
+    st_cb = SafeStreamlitCallback(parent_container, debug_mode=debug_mode)
 
     for method_name, method_func in inspect.getmembers(st_cb, predicate=inspect.ismethod):
         if method_name.startswith('on_'):
@@ -112,7 +140,7 @@ def create_agent():
      
      async def _create():
           if agent_type == "OpenAI":
-               agent, tools = await create_openai_agent(server_name=mcp_type)
+               agent = await create_openai_agent(server_name=mcp_type)
                return agent
           else:
                return await OpenSourceBalatroAgent.create(server_name=mcp_type)
@@ -136,6 +164,8 @@ def init_session_state() -> None:
           st.session_state.agent_type = "OpenAI"
      if "mcp_type" not in st.session_state:
           st.session_state.mcp_type = "mouse"
+     if "debug_mode" not in st.session_state:
+          st.session_state.debug_mode = False
      if "agent" not in st.session_state:
           with st.spinner("Inicializando agente IA..."):
                st.session_state.agent = create_agent()
@@ -168,7 +198,7 @@ def chat_block() -> None:
                     config = {
                          "recursion_limit": MAX_ITERATIONS,
                          "configurable": {"max_iterations": MAX_ITERATIONS},
-                         "callbacks": [get_streamlit_cb(st.empty())]
+                         "callbacks": [get_streamlit_cb(st.empty(), debug_mode=st.session_state.debug_mode)]
                     }
                     
                     try:
@@ -179,10 +209,6 @@ def chat_block() -> None:
                                    config=config
                               )
                          )
-
-                         # Debug:
-                         for msg in response["messages"]:
-                              print(f"Message: {msg}")
 
                          last_msg = response["messages"][-1].content
 
@@ -214,7 +240,7 @@ if __name__ == "__main__":
 
      # Configuración del Agente
      with st.expander("⚙️ Configuración del Agente", expanded=False):
-          col1, col2 = st.columns(2)
+          col1, col2, col3 = st.columns(3)
           
           with col1:
                agent_type = st.selectbox(
@@ -230,16 +256,32 @@ if __name__ == "__main__":
                     index=0 if st.session_state.mcp_type == "mouse" else 1
                )
           
+          with col3:
+               debug_mode = st.checkbox(
+                    "🐛 Modo Debug",
+                    value=st.session_state.debug_mode,
+                    help="Mostrar mensajes enviados al modelo"
+               )
+          
           # Aplicar cambios si es necesario
-          if agent_type != st.session_state.agent_type or mcp_type != st.session_state.mcp_type:
+          has_changes = (
+               agent_type != st.session_state.agent_type or 
+               mcp_type != st.session_state.mcp_type or
+               debug_mode != st.session_state.debug_mode
+          )
+          
+          if has_changes:
                if st.button("🔄 Aplicar Configuración", type="primary"):
                     st.session_state.agent_type = agent_type
                     st.session_state.mcp_type = mcp_type
-                    recreate_agent()
+                    st.session_state.debug_mode = debug_mode
+                    if agent_type != st.session_state.agent_type or mcp_type != st.session_state.mcp_type:
+                         recreate_agent()
                     st.success("¡Configuración aplicada!")
                     st.rerun()
           else:
-               st.info(f"🤖 Agente: **{st.session_state.agent_type}** | 🎮 MCP: **{st.session_state.mcp_type}**")
+               debug_status = "🐛 ON" if st.session_state.debug_mode else "🐛 OFF"
+               st.info(f"🤖 Agente: **{st.session_state.agent_type}** | 🎮 MCP: **{st.session_state.mcp_type}** | {debug_status}")
 
      columns = st.columns(2)
      with columns[0]:

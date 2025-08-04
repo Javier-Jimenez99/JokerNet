@@ -199,6 +199,12 @@ def get_screen_with_cursor() -> Image:
             raise RuntimeError(f"Screenshot backend error: HTTP {response.status_code} - {response.text}")
 
         return Image(data=response.content, format="png")
+        # return [
+        #     {
+        #         "type": "image_url",
+        #         "image_url": f"data:image/png;base64,{response.content}"
+        #     }
+        # ]
         
     except requests.RequestException as e:
         raise RuntimeError(f"Failed to get screenshot with cursor: {str(e)}")
