@@ -91,3 +91,18 @@ def load_agent_prompt(control_type: str = "mouse") -> str:
     full_prompt = general_template.render(controls=controls_content)
     
     return full_prompt
+
+def load_summary_prompt() -> str:
+    """Load and render the summary prompt from Jinja templates."""
+    prompts_dir = "./prompts"
+    
+    # Configurar el entorno de Jinja2
+    env = Environment(loader=FileSystemLoader(prompts_dir))
+    
+    # Cargar el template de resumen
+    summary_template = env.get_template("summary.jinja")    
+
+    # Renderizar el template de resumen
+    summary_content = summary_template.render()
+
+    return summary_content

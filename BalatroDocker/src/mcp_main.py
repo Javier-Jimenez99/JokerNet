@@ -25,10 +25,9 @@ from mcp_server.tools.gamepad_tools import (
     get_screen as _get_screen,
 )
 from mcp_server.tools.mouse_tools import (
-    get_mouse_position as _get_mouse_position, 
-    mouse_click as _mouse_click, 
-    mouse_move as _mouse_move, 
+    mouse_click as _mouse_click,
     mouse_drag as _mouse_drag, 
+    locate_element as _locate_element,
     get_screen_with_cursor as _get_screen_with_cursor,
     get_screen_dimensions as _get_screen_dimensions,
 )
@@ -65,11 +64,17 @@ def get_screen_info_text():
         return "Screen resolution: Available via get_mouse_position. "
 
 # Mouse Tools
+# @mouse_mcp.tool(
+#     description=f"Get the current mouse position in pixel coordinates. Also returns current screen dimensions.",
+# )
+# def get_mouse_position() -> dict:
+#     return _get_mouse_position()
+
 @mouse_mcp.tool(
-    description=f"Get the current mouse position in pixel coordinates. Also returns current screen dimensions.",
+    description=f"Locate an element on the screen by a brief description.",
 )
-def get_mouse_position() -> dict:
-    return _get_mouse_position()
+def locate_element(description: str) -> dict:
+    return _locate_element(description)
 
 @mouse_mcp.tool(
     description=f"Click at a specific coordinate on the screen using pixel coordinates. {get_screen_info_text()}Use exact pixel coordinates for precise clicking.",
@@ -77,11 +82,11 @@ def get_mouse_position() -> dict:
 def mouse_click(x: int, y: int, button: str = "left", clicks: int = 1) -> dict:
     return _mouse_click(x, y, button, clicks)
 
-@mouse_mcp.tool(
-    description=f"Move the mouse cursor to a specific coordinate using pixel coordinates. {get_screen_info_text()}Use exact pixel coordinates for precise movement.",
-)
-def mouse_move(x: int, y: int, duration: float = 0.0) -> dict:
-    return _mouse_move(x, y, duration)
+# @mouse_mcp.tool(
+#     description=f"Move the mouse cursor to a specific coordinate using pixel coordinates. {get_screen_info_text()}Use exact pixel coordinates for precise movement.",
+# )
+# def mouse_move(x: int, y: int, duration: float = 0.0) -> dict:
+#     return _mouse_move(x, y, duration)
 
 @mouse_mcp.tool(
     description=f"Drag the mouse from start coordinates to end coordinates using pixel coordinates. {get_screen_info_text()}Use exact pixel coordinates for precise dragging.",

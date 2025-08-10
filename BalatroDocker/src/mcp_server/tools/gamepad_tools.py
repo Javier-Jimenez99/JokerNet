@@ -4,6 +4,7 @@ Gamepad tools for MCP server integration.
 from uuid import uuid4
 import requests
 from fastmcp.utilities.types import Image
+import base64
 
 FASTAPI_URL = "http://localhost:8000"
 
@@ -64,7 +65,11 @@ def get_screen() -> Image:
         if response.status_code != 200:
             raise RuntimeError(f"Screenshot backend error: HTTP {response.status_code} - {response.text}")
 
-        return Image(data=response.content, format="png")
+        image_base64 = base64.b64encode(response.content).decode('utf-8')
+
+        return {
+            "screenshot": f"data:image/png;base64,{image_base64}"
+        }
         
     except requests.RequestException as e:
         raise RuntimeError(f"Failed to get screenshot: {str(e)}")

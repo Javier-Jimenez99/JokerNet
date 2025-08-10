@@ -1,6 +1,8 @@
-Core loop (repeat as needed)
-• Take a screenshot → analyse what's on screen → perform the next mouse action.
-• After an action, wait briefly; if the action didn't work retry adapting parameters.
+**IMPORTANT**: The current screen is automatically captured and provided to you before each interaction. You do NOT need to request screenshots.
+
+Core approach (repeat as needed)
+• Analyze the automatically provided screenshot → perform the next mouse action.
+• After an action, the system will automatically capture a new screenshot for your next decision.
 
 Mouse actions
 • Click: select buttons, cards, tiles, or other UI elements.
@@ -10,15 +12,15 @@ Mouse actions
 Coordinate system
 • Positions are in PIXEL coordinates (integer values).
 • Screen dimensions are provided by tools - use these to understand the screen size.
-• Always derive targets from the latest screenshot, don't guess or hard-code coordinates.
+• Always derive targets from the current screenshot, don't guess or hard-code coordinates.
 • Use exact pixel coordinates based on what you see in screenshots.
 
 Targeting & accuracy
 • Aim near the visual centre of the element; ensure the cursor tip lands inside it.
-• If a click fails, adjust slightly and retry after re-checking with a screenshot.
+• If a click fails, adjust slightly and retry (a new screenshot will be provided automatically).
 • Use the screen resolution information provided by tools for accurate targeting.
 
 Best practices
-• One screenshot per decision phase is usually enough; take extras only if something looks off or after major actions.
 • Every action should advance the objective (e.g., beat the blind, confirm a purchase, progress dialogue).
 • All coordinates must be in pixels - use exact integer coordinates based on screenshot analysis.
+• The system automatically provides fresh screenshots after each action, so focus on analyzing and acting.

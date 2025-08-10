@@ -6,3 +6,6 @@ requests
 fastmcp
 pyautogui
 Pillow
+transformers==4.53.3
+einops
+timm
