@@ -9,9 +9,13 @@ services:
       - GAME_SPEED=16
       - MOD_URLS=https://github.com/OceanRamen/Saturn/archive/refs/heads/main.zip
       - DISPLAY=:0
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=all
     volumes:
       # As Balatro is installed in startup, this volume is used to persist the Steam installation and authentication
       - ./data/steam:/root/.steam/steam
+      # Persistent Hugging Face models cache
+      - ./data/huggingface:/root/.cache/huggingface
       # Mount host devices for input simulation
       - /dev/uinput:/dev/uinput
       - /dev/input:/dev/input
@@ -22,6 +26,13 @@ services:
       - "8001:8001"  # MCP Server
       - "5900:5900"  # VNC
       - "6080:80"    # <- host 6080 ➜ contenedor 80 (Nginx)
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
     shm_size: "2gb"
     privileged: true
     restart: unless-stopped

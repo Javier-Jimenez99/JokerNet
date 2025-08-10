@@ -2,15 +2,27 @@ FROM steamcmd/steamcmd:ubuntu
 
 ENV DEBIAN_FRONTEND=noninteractive \
     DISPLAY=:0 \
-    GAME_SPEED=16
+    GAME_SPEED=16 \
+    HF_HOME=/root/.cache/huggingface \
+    TRANSFORMERS_CACHE=/root/.cache/huggingface \
+    HF_HUB_CACHE=/root/.cache/huggingface/hub \
+    NVIDIA_VISIBLE_DEVICES=all \
+    NVIDIA_DRIVER_CAPABILITIES=all
 
-# Install minimal system dependencies
+# Add NVIDIA package repositories
+RUN apt-get update && apt-get install -y \
+    wget \
+    gnupg2 \
+    && wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.0-1_all.deb \
+    && dpkg -i cuda-keyring_1.0-1_all.deb \
+    && apt-get update
+
+# Install minimal system dependencies and CUDA runtime
 RUN apt-get update && apt-get install -y \
     python3 \
     python3-pip \
     python3-dev \
     python3-tk \
-    wget \
     curl \
     unzip \
     git \
@@ -32,6 +44,7 @@ RUN apt-get update && apt-get install -y \
     nodejs \
     npm \
     nginx \
+    cuda-runtime-11-8 \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Love2D and luasocket for mods
@@ -60,6 +73,7 @@ COPY scripts/setup_all.sh /usr/local/bin/setup_all.sh
 COPY scripts/startup.sh /usr/local/bin/startup.sh
 COPY scripts/setup_love.sh /usr/local/bin/setup_love.sh
 COPY scripts/setup_novnc.sh /usr/local/bin/setup_novnc.sh
+COPY scripts/test_gpu.sh /usr/local/bin/test_gpu.sh
 COPY config/supervisord.conf /config/supervisord.conf
 
 # Make scripts executable
@@ -72,7 +86,7 @@ RUN /usr/local/bin/setup_novnc.sh
 COPY BalatroLogger /BalatroLogger
 
 # Create necessary directories
-RUN mkdir -p /tmp/.X11-unix /var/log/supervisor /root/.local/share \
+RUN mkdir -p /tmp/.X11-unix /var/log/supervisor /root/.local/share /root/.cache/huggingface \
     && chmod 1777 /tmp/.X11-unix
 
 # Copy Love2D saved configuration

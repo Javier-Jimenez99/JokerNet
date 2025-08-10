@@ -205,15 +205,25 @@ def locate_element(description: str) -> dict:
             device = "cuda:0" if torch.cuda.is_available() else "cpu"
             torch_dtype = torch.float16 if torch.cuda.is_available() else torch.float32
             
+            # Use explicit cache directory for persistence
+            cache_dir = "/root/.cache/huggingface"
+            
             # Load model with specific configuration to avoid SDPA issues
             LOCATOR_MODEL = AutoModelForCausalLM.from_pretrained(
                 "AskUI/PTA-1", 
                 torch_dtype=torch_dtype, 
                 trust_remote_code=True,
+                cache_dir=cache_dir
             ).to(device)
         
         if LOCATOR_PROCESSOR is None:
-            LOCATOR_PROCESSOR = AutoProcessor.from_pretrained("AskUI/PTA-1", trust_remote_code=True)
+            # Use explicit cache directory for persistence
+            cache_dir = "/root/.cache/huggingface"
+            LOCATOR_PROCESSOR = AutoProcessor.from_pretrained(
+                "AskUI/PTA-1", 
+                trust_remote_code=True,
+                cache_dir=cache_dir
+            )
 
         # Prepare the prompt
         task_prompt = "<OPEN_VOCABULARY_DETECTION>"
