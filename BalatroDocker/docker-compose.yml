@@ -10,7 +10,7 @@ services:
       - MOD_URLS=https://github.com/OceanRamen/Saturn/archive/refs/heads/main.zip
       - DISPLAY=:0
       - NVIDIA_VISIBLE_DEVICES=all
-      - NVIDIA_DRIVER_CAPABILITIES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
     volumes:
       # As Balatro is installed in startup, this volume is used to persist the Steam installation and authentication
       - ./data/steam:/root/.steam/steam

@@ -73,7 +73,6 @@ COPY scripts/setup_all.sh /usr/local/bin/setup_all.sh
 COPY scripts/startup.sh /usr/local/bin/startup.sh
 COPY scripts/setup_love.sh /usr/local/bin/setup_love.sh
 COPY scripts/setup_novnc.sh /usr/local/bin/setup_novnc.sh
-COPY scripts/test_gpu.sh /usr/local/bin/test_gpu.sh
 COPY config/supervisord.conf /config/supervisord.conf
 
 # Make scripts executable
