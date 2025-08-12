@@ -9,15 +9,19 @@ ENV DEBIAN_FRONTEND=noninteractive \
     NVIDIA_VISIBLE_DEVICES=all \
     NVIDIA_DRIVER_CAPABILITIES=all
 
-# Add NVIDIA package repositories
+# Add NVIDIA package repositories with retry logic
 RUN apt-get update && apt-get install -y \
     wget \
     gnupg2 \
-    && wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.0-1_all.deb \
+    && for i in 1 2 3; do \
+        wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.0-1_all.deb && break || sleep 10; \
+    done \
     && dpkg -i cuda-keyring_1.0-1_all.deb \
+    && (apt-get update || true) \
+    && sleep 5 \
     && apt-get update
 
-# Install minimal system dependencies and CUDA runtime
+# Install basic system dependencies first
 RUN apt-get update && apt-get install -y \
     python3 \
     python3-pip \
@@ -26,6 +30,10 @@ RUN apt-get update && apt-get install -y \
     curl \
     unzip \
     git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install GUI and system tools
+RUN apt-get update && apt-get install -y \
     xvfb \
     x11vnc \
     file \
@@ -34,6 +42,10 @@ RUN apt-get update && apt-get install -y \
     bsdmainutils \
     p7zip-full \
     rsync \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install development and multimedia tools
+RUN apt-get update && apt-get install -y \
     libudev-dev \
     build-essential \
     wmctrl \
@@ -44,8 +56,12 @@ RUN apt-get update && apt-get install -y \
     nodejs \
     npm \
     nginx \
-    cuda-runtime-11-8 \
     && rm -rf /var/lib/apt/lists/*
+
+# Try to install CUDA runtime (optional)
+RUN apt-get update && \
+    (apt-get install -y cuda-runtime-11-8 || echo "CUDA installation failed, continuing without CUDA") && \
+    rm -rf /var/lib/apt/lists/*
 
 # Install Love2D and luasocket for mods
 RUN add-apt-repository ppa:bartbes/love-stable -y && \
