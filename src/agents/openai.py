@@ -35,23 +35,33 @@ def prepare_initial_state_node(state: AgentState) -> dict:
     También inicializa el contador de recursión.
     """
     if not state.get("messages"):
+        print("🚀 Iniciando agente sin mensajes iniciales")
         return {"recursion_count": 0}
+    
+    print("🚀 Iniciando agente - Preparando estado inicial")
+    print(f"Número de mensajes recibidos: {len(state['messages'])}")
     
     # Convertir mensajes de formato OpenAI a objetos BaseMessage
     converted_messages = []
-    for msg in state["messages"]:
+    for i, msg in enumerate(state["messages"]):
         if isinstance(msg, dict):
             # Si es un diccionario, convertir de formato OpenAI a BaseMessage
             if msg.get("role") == "user":
                 converted_messages.append(HumanMessage(content=msg["content"]))
+                print(f"  Mensaje {i+1}: Usuario - {str(msg['content'])[:100]}...")
             elif msg.get("role") == "assistant":
                 converted_messages.append(AIMessage(content=msg["content"]))
+                print(f"  Mensaje {i+1}: Asistente - {str(msg['content'])[:100]}...")
             elif msg.get("role") == "system":
                 # Los mensajes del sistema generalmente se manejan en el prompt
+                print(f"  Mensaje {i+1}: Sistema (ignorado en initial_task)")
                 pass
         else:
             # Si ya es un objeto BaseMessage, usarlo directamente
             converted_messages.append(msg)
+            print(f"  Mensaje {i+1}: {type(msg).__name__} - {str(msg.content)[:100]}...")
+    
+    print(f"Mensajes convertidos para initial_task: {len(converted_messages)}")
     
     return {
         "initial_task": converted_messages,
@@ -61,6 +71,7 @@ def prepare_initial_state_node(state: AgentState) -> dict:
 async def capture_screenshot_node(state: AgentState, screenshot_tool: Runnable) -> dict:
     """Toma una captura de pantalla y la guarda en 'last_screenshot'. También incrementa el contador de recursión."""
     try:
+        print("📸 Capturando nueva pantalla...")
         result = json.loads(await screenshot_tool.ainvoke({}))
         image_data = result.get("screenshot", "")
         mouse_info = result.get("mouse_info", "")
@@ -72,12 +83,14 @@ async def capture_screenshot_node(state: AgentState, screenshot_tool: Runnable) 
         
         # Incrementar el contador de recursión
         current_count = state.get("recursion_count", 0)
+        print(f"📸 Pantalla capturada exitosamente. Recursión: {current_count} -> {current_count + 1}")
+        
         return {
             "last_screenshot": human_msg,
             "recursion_count": current_count + 1
         }
     except Exception as e:
-        print(f"Error capturing screenshot: {e}")
+        print(f"❌ Error capturando pantalla: {e}")
         human_msg = HumanMessage(content=[
             {"type": "text", "text": f"Screenshot capturing error"},
         ])
@@ -102,7 +115,40 @@ async def agent_node(state: AgentState, llm: Runnable) -> dict:
 
     messages_for_llm.append(state["last_screenshot"])
     
+    # Log de la llamada al modelo
+    print("=" * 80)
+    print("LLAMADA AL MODELO LLM (agent_node)")
+    print(f"Número de mensajes enviados: {len(messages_for_llm)}")
+    print(f"Contador de recursión actual: {state.get('recursion_count', 0)}")
+    
+    for i, msg in enumerate(messages_for_llm):
+        msg_type = type(msg).__name__
+        if hasattr(msg, 'content'):
+            # Mostrar contenido limitado para evitar spam excesivo
+            content_preview = str(msg.content)[:200] + "..." if len(str(msg.content)) > 200 else str(msg.content)
+            print(f"  Mensaje {i+1} ({msg_type}): {content_preview}")
+        else:
+            print(f"  Mensaje {i+1} ({msg_type}): {msg}")
+    
+    if state.get("last_ai_with_tools"):
+        print(f"Hay mensaje AI previo con tool_calls: {len(state['last_ai_with_tools'].tool_calls) if state['last_ai_with_tools'].tool_calls else 0} herramientas")
+    
+    if state.get("last_tool_message"):
+        print(f"Hay resultados de herramientas previos: {len(state['last_tool_message'])} mensajes")
+    
+    print("Enviando al LLM...")
+    
     resp: AIMessage = await llm.ainvoke({"messages": messages_for_llm})
+    
+    # Log de la respuesta
+    response_preview = resp.content[:200] + "..." if len(str(resp.content)) > 200 else str(resp.content)
+    print(f"RESPUESTA DEL LLM: {response_preview}")
+    print(f"Tool calls en respuesta: {len(resp.tool_calls) if resp.tool_calls else 0}")
+    if resp.tool_calls:
+        for i, tool_call in enumerate(resp.tool_calls):
+            print(f"  Tool {i+1}: {tool_call.get('name', 'unknown')} con args: {str(tool_call.get('args', {}))[:100]}")
+    print("=" * 80)
+    
     return {"ai_message": resp}
 
 async def summary_node(state: AgentState, llm: Runnable) -> dict:
@@ -117,7 +163,30 @@ async def summary_node(state: AgentState, llm: Runnable) -> dict:
     if state.get("last_screenshot"):
         messages_for_summary.append(state["last_screenshot"])
 
+    # Log de la llamada al modelo de resumen
+    print("=" * 80)
+    print("LLAMADA AL MODELO LLM (summary_node)")
+    print("LÍMITE DE RECURSIÓN ALCANZADO - Generando resumen")
+    print(f"Número de mensajes enviados: {len(messages_for_summary)}")
+    print(f"Contador de recursión final: {state.get('recursion_count', 0)}")
+    
+    for i, msg in enumerate(messages_for_summary):
+        msg_type = type(msg).__name__
+        if hasattr(msg, 'content'):
+            content_preview = str(msg.content)[:200] + "..." if len(str(msg.content)) > 200 else str(msg.content)
+            print(f"  Mensaje {i+1} ({msg_type}): {content_preview}")
+        else:
+            print(f"  Mensaje {i+1} ({msg_type}): {msg}")
+    
+    print("Enviando al LLM para resumen...")
+
     resp: AIMessage = await llm.ainvoke({"messages": messages_for_summary})
+    
+    # Log de la respuesta del resumen
+    response_preview = resp.content[:200] + "..." if len(str(resp.content)) > 200 else str(resp.content)
+    print(f"RESPUESTA DEL RESUMEN: {response_preview}")
+    print("=" * 80)
+    
     return {"ai_message": resp}
 
 def should_continue(state: AgentState, max_recursions: int = 10) -> Literal["tools", "summary", "__end__"]:
@@ -142,10 +211,31 @@ async def unified_tool_node(state: AgentState, tool_node: Runnable) -> dict:
     if not ai_msg or not ai_msg.tool_calls:
         return {}
 
+    # Log de las herramientas a ejecutar
+    print("-" * 60)
+    print("EJECUTANDO HERRAMIENTAS")
+    print(f"Número de herramientas a ejecutar: {len(ai_msg.tool_calls)}")
+    
+    for i, tool_call in enumerate(ai_msg.tool_calls):
+        tool_name = tool_call.get('name', 'unknown')
+        tool_args = tool_call.get('args', {})
+        print(f"  Herramienta {i+1}: {tool_name}")
+        print(f"    Argumentos: {tool_args}")
+
     tool_messages = await tool_node.ainvoke([ai_msg])
     
     if not isinstance(tool_messages, list):
         tool_messages = [tool_messages]
+    
+    # Log de los resultados de las herramientas
+    print(f"Resultados obtenidos de {len(tool_messages)} herramientas:")
+    for i, tool_msg in enumerate(tool_messages):
+        if hasattr(tool_msg, 'content'):
+            content_preview = str(tool_msg.content)[:200] + "..." if len(str(tool_msg.content)) > 200 else str(tool_msg.content)
+            print(f"  Resultado {i+1}: {content_preview}")
+        else:
+            print(f"  Resultado {i+1}: {tool_msg}")
+    print("-" * 60)
     
     return {
         "last_tool_message": tool_messages,

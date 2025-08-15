@@ -3,7 +3,7 @@ from streamlit.components.v1 import html
 import requests
 import time 
 import asyncio
-from agents import create_openai_agent, OpenSourceBalatroAgent
+from agents import OpenSourceBalatroAgent, create_worker
 from typing import Callable, TypeVar
 import inspect
 
@@ -185,16 +185,12 @@ def restart_balatro():
 
 @st.cache_resource
 def create_agent():
-     """Crear agente según la configuración seleccionada."""
-     agent_type = st.session_state.get("agent_type", "OpenAI")
+     """Crear agente Worker."""
      mcp_type = st.session_state.get("mcp_type", "mouse")
      
      async def _create():
-          if agent_type == "OpenAI":
-               agent = await create_openai_agent(server_name=mcp_type)
-               return agent
-          else:
-               return await OpenSourceBalatroAgent.create(server_name=mcp_type)
+          worker = await create_worker(server_name=mcp_type)
+          return worker
      
      return asyncio.run(_create())
 
@@ -205,14 +201,37 @@ def recreate_agent():
           st.session_state.agent = create_agent()
      st.session_state.chat_history = []
 
+def format_worker_result_for_chat(result):
+     """Formatear el resultado del worker para mostrar en el chat."""
+     if not result:
+          return "No se pudo obtener un resultado del worker."
+     
+     # Crear mensaje para el chat basado en el resultado
+     success = result.get("success", False)
+     reason = result.get("reason", "unknown")
+     iterations = result.get("iterations", 0)
+     description = result.get("description", "")
+     
+     # Campo específico para el chat
+     if success:
+          chat_message = f"✅ Tarea completada: {reason}\n\n{description}"
+     else:
+          chat_message = f"❌ Tarea fallida: {reason}\n\n{description}"
+     
+     chat_message += f"\n\n📊 Iteraciones: {iterations}"
+     
+     # Añadir razonamiento si existe
+     if "worker_reasoning" in result:
+          chat_message += f"\n\n🧠 Razonamiento: {result['worker_reasoning']}"
+     
+     return chat_message
+
 def init_session_state() -> None:
      """Inicializar estado de la sesión."""
      if "game_started" not in st.session_state:
           st.session_state.game_started = False
      if "chat_history" not in st.session_state:
           st.session_state.chat_history = []
-     if "agent_type" not in st.session_state:
-          st.session_state.agent_type = "OpenAI"
      if "mcp_type" not in st.session_state:
           st.session_state.mcp_type = "mouse"
      if "debug_mode" not in st.session_state:
@@ -236,7 +255,7 @@ def chat_block() -> None:
           display_messages()
      
      # Input del usuario fuera del contenedor de mensajes
-     if user_input := st.chat_input(placeholder="Escribe tu mensaje…"):
+     if user_input := st.chat_input(placeholder="Describe la tarea que quieres que realice..."):
           # Añadir mensaje del usuario al historial
           history = st.session_state.get("chat_history", [])
           history.append({"role": "user", "content": user_input})
@@ -253,15 +272,30 @@ def chat_block() -> None:
                     }
                     
                     try:
-                         # Llamar al agente
+                         # Usar el Worker con su entrada por defecto
                          response = asyncio.run(
                               st.session_state.agent.ainvoke(
-                                   input={"messages": history},
+                                   input={
+                                        "task": user_input,
+                                        "history_messages": [],
+                                        "screen_descriptions": [],
+                                        "consecutive_duplicates": 0,
+                                        "recursion_count": 0,
+                                        "max_recursions": MAX_ITERATIONS,
+                                        "history_limit": 20,
+                                        "done": False
+                                   },
                                    config=config
                               )
                          )
-
-                         last_msg = response["messages"][-1].content
+                         
+                         # Obtener el resultado del worker
+                         if "result" in response and response["result"]:
+                              result = response["result"]
+                              # Usar la función de formateo para el chat
+                              last_msg = format_worker_result_for_chat(result)
+                         else:
+                              last_msg = "No se pudo obtener un resultado del worker."
 
                          st.markdown(last_msg)
                          st.session_state.chat_history.append({"role": "assistant", "content": last_msg})
@@ -270,9 +304,6 @@ def chat_block() -> None:
                          error_msg = f"Error al procesar la solicitud: {str(e)}"
                          st.markdown(error_msg)
                          st.session_state.chat_history.append({"role": "assistant", "content": error_msg})
-
-          # Rerun para actualizar la vista
-          #st.rerun(scope="fragment")
 
 if __name__ == "__main__":
      st.set_page_config(layout="wide", page_title="Balatro - Escritorio Remoto")
@@ -289,25 +320,18 @@ if __name__ == "__main__":
 
      st.title("🃏 Balatro - Escritorio Remoto")
 
-     # Configuración del Agente
-     with st.expander("⚙️ Configuración del Agente", expanded=False):
-          col1, col2, col3 = st.columns(3)
+     # Configuración
+     with st.expander("⚙️ Configuración", expanded=False):
+          col1, col2 = st.columns(2)
           
           with col1:
-               agent_type = st.selectbox(
-                    "Tipo de Agente:",
-                    ["OpenAI", "OpenSource"],
-                    index=0 if st.session_state.agent_type == "OpenAI" else 1
-               )
-          
-          with col2:
                mcp_type = st.selectbox(
                     "Tipo de MCP:",
                     ["mouse", "gamepad"],
                     index=0 if st.session_state.mcp_type == "mouse" else 1
                )
           
-          with col3:
+          with col2:
                debug_mode = st.checkbox(
                     "🐛 Modo Debug",
                     value=st.session_state.debug_mode,
@@ -316,23 +340,21 @@ if __name__ == "__main__":
           
           # Aplicar cambios si es necesario
           has_changes = (
-               agent_type != st.session_state.agent_type or 
                mcp_type != st.session_state.mcp_type or
                debug_mode != st.session_state.debug_mode
           )
           
           if has_changes:
                if st.button("🔄 Aplicar Configuración", type="primary"):
-                    st.session_state.agent_type = agent_type
                     st.session_state.mcp_type = mcp_type
                     st.session_state.debug_mode = debug_mode
-                    if agent_type != st.session_state.agent_type or mcp_type != st.session_state.mcp_type:
+                    if mcp_type != st.session_state.mcp_type:
                          recreate_agent()
                     st.success("¡Configuración aplicada!")
                     st.rerun()
           else:
                debug_status = "🐛 ON" if st.session_state.debug_mode else "🐛 OFF"
-               st.info(f"🤖 Agente: **{st.session_state.agent_type}** | 🎮 MCP: **{st.session_state.mcp_type}** | {debug_status} | 🚀 Model used: **{os.getenv('AZURE_OPENAI_MODEL')}**")
+               st.info(f"🤖 Agente: **Worker** | 🎮 MCP: **{st.session_state.mcp_type}** | {debug_status} | 🚀 Model used: **{os.getenv('AZURE_OPENAI_MODEL')}**")
 
      columns = st.columns(2)
      with columns[0]:
@@ -362,6 +384,7 @@ if __name__ == "__main__":
 
           # Chat
           if "agent" in st.session_state:
+               st.info("💡 **Worker Mode**: Describe una tarea específica que quieres que el agente realice en Balatro (ej: 'Juega una ronda', 'Ve al menú de configuración', 'Selecciona la carta azul')")
                chat_block()
           else:
                st.info("Inicializando agente IA...")

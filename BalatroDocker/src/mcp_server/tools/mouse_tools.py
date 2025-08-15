@@ -34,15 +34,13 @@ def get_screen_dimensions() -> dict:
         return {"width": 1920, "height": 1080}
 
 
-def mouse_click(x: int, y: int, button: str = "left", clicks: int = 1) -> dict:
+def mouse_click(x: int, y: int) -> dict:
     """
     Click at a specific coordinate on the screen using pixel coordinates.
     
     Args:
         x (int): X coordinate in pixels
         y (int): Y coordinate in pixels
-        button (str): Mouse button to click ('left', 'right', 'middle')
-        clicks (int): Number of clicks (default: 1)
     
     Returns:
         dict: Status of the click operation
@@ -51,8 +49,8 @@ def mouse_click(x: int, y: int, button: str = "left", clicks: int = 1) -> dict:
         payload = {
             "x": x,
             "y": y,
-            "button": button,
-            "clicks": clicks
+            "button": "left",
+            "clicks": 2
         }
         
         response = requests.post(f"{FASTAPI_URL}/mouse/click", json=payload, timeout=10)
@@ -230,7 +228,7 @@ def locate_element(description: str) -> dict:
         prompt = task_prompt + " " + description
 
         # Get screenshot
-        screenshot_response = requests.get(f"{FASTAPI_URL}/screenshot_with_cursor", timeout=10)
+        screenshot_response = requests.get(f"{FASTAPI_URL}/screenshot", timeout=10)
         
         if screenshot_response.status_code != 200:
             return {
@@ -266,6 +264,41 @@ def locate_element(description: str) -> dict:
             task="<OPEN_VOCABULARY_DETECTION>", 
             image_size=(image.width, image.height)
         )
+
+        # Calculate click position for each detected polygon
+        if parsed_answer and '<OPEN_VOCABULARY_DETECTION>' in parsed_answer:
+            detection_result = parsed_answer['<OPEN_VOCABULARY_DETECTION>']
+            
+            # Add click_position for polygons
+            if 'polygons' in detection_result and detection_result['polygons']:
+                click_positions = []
+                for polygon in detection_result['polygons']:
+                    if polygon and len(polygon[0]) >= 6:  # At least 3 points (6 coordinates) for a valid polygon
+                        # Extract coordinates: [x1, y1, x2, y2, x3, y3, ...]
+                        coords = polygon[0]
+                        # Calculate center point (centroid)
+                        x_coords = [coords[i] for i in range(0, len(coords), 2)]
+                        y_coords = [coords[i] for i in range(1, len(coords), 2)]
+                        center_x = int(sum(x_coords) / len(x_coords))
+                        center_y = int(sum(y_coords) / len(y_coords))
+                        click_positions.append({"x": center_x, "y": center_y})
+                    else:
+                        click_positions.append(None)
+                
+                detection_result['click_positions'] = click_positions
+            
+            # Add click_position for bboxes if present
+            if 'bboxes' in detection_result and detection_result['bboxes']:
+                if 'click_positions' not in detection_result:
+                    detection_result['click_positions'] = []
+                
+                for bbox in detection_result['bboxes']:
+                    if bbox and len(bbox) >= 4:  # [x1, y1, x2, y2]
+                        center_x = int((bbox[0] + bbox[2]) / 2)
+                        center_y = int((bbox[1] + bbox[3]) / 2)
+                        detection_result['click_positions'].append({"x": center_x, "y": center_y})
+                    else:
+                        detection_result['click_positions'].append(None)
 
         return {
             "status": "success",
