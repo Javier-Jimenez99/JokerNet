@@ -307,6 +307,7 @@ def locate_element(description: str) -> dict:
         
     except Exception as e:
         print(f"Error locating element: {e}")
+        traceback.print_exc()
         return {
             "status": "error",
             "message": f"Error locating element: {str(e)}"
