@@ -402,7 +402,6 @@ async def create_worker(server_name: str = "mouse"):
     
     # Get tools for the specified server
     tools = await client.get_tools(server_name=server_name)
-    print(f"🎮 Worker initialized with {server_name} controls. Available tools: {[getattr(t, 'name', 'unknown') for t in tools]}")
 
     screenshot_tool, control_tools = None, []
     for t in tools:

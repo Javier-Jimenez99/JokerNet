@@ -10,12 +10,16 @@ def init_session_state():
     if "chat_history" not in st.session_state:
         st.session_state.chat_history = []
     if "mcp_type" not in st.session_state:
-        st.session_state.mcp_type = "gamepad"  # Cambio: gamepad por defecto
+        st.session_state.mcp_type = "gamepad"
     if "debug_mode" not in st.session_state:
         st.session_state.debug_mode = False
     if "agent" not in st.session_state:
         with st.spinner("Inicializando agente IA..."):
             st.session_state.agent = create_agent()
+    if "deck" not in st.session_state:
+        st.session_state.deck = "b_blue"
+    if "stake" not in st.session_state:
+        st.session_state.stake = 1
 
 def render_vnc_viewer():
     """Renderizar visor VNC."""

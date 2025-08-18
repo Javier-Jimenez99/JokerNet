@@ -27,18 +27,24 @@ def main():
     
     # Instanciar el cliente API
     api_client = APIClient()
-    
-    # Iniciar Balatro automáticamente
-    api_client.start_balatro()
-
-    # Iniciar juego si no está iniciado
-    if not st.session_state.get("game_started", False):
-        with st.spinner("Iniciando Balatro…", show_time=True):
-            time.sleep(5)
-        api_client.start_run()
 
     # Título principal
     st.title("🃏 Balatro - Escritorio Remoto")
+
+    # Iniciar juego si no está iniciado
+    if not st.session_state.game_started:
+        with st.spinner("Iniciando Balatro…", show_time=True):
+            resp = api_client.restart_balatro(
+                deck=st.session_state.deck, 
+                stake=st.session_state.stake,
+                controller_type=st.session_state.mcp_type
+            )
+            time.sleep(2)
+
+        if resp.get("status") == "success":
+            st.session_state["game_started"] = True
+        else:
+            st.error("Error al iniciar la run. Revisa los logs del servidor.")
 
     render_agent_config()
     render_run_config(api_client)
