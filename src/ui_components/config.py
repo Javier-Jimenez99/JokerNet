@@ -24,7 +24,11 @@ def render_agent_config():
             if mcp_type != old_mcp_type:
                 st.session_state.mcp_type = mcp_type
                 st.session_state.game_started = False
-                recreate_agent()
+                try:
+                    recreate_agent()
+                except Exception as e:
+                    st.error(f"❌ Error al recrear el agente: {e}")
+                    return
                 st.success(f"🔄 Cambiado a modo {mcp_type}")
                 st.rerun()
         
