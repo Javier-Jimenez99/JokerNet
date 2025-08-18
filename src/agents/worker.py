@@ -185,7 +185,7 @@ async def capture_node(state: AgentState, screenshot_tool, server_name: str = "m
     current_count = state.get("recursion_count", 0) + 1
     max_rec = state.get("max_recursions", 120)
     
-    if current_count > max_rec:
+    if current_count >= max_rec:
         return {"done": True, "result": {"success": False, "reason": "max_iterations"}, "recursion_count": current_count}
     
     try:
