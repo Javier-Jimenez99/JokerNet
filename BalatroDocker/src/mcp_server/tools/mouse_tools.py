@@ -245,7 +245,7 @@ def locate_element(description: str) -> dict:
 
         # Process inputs
         inputs = LOCATOR_PROCESSOR(text=prompt, images=image, return_tensors="pt").to(device, torch_dtype)
-
+        # Model and processor are now pre-loaded at startup
         # Generate prediction with additional safety parameters
         generated_ids = LOCATOR_MODEL.generate(
             input_ids=inputs["input_ids"],
