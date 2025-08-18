@@ -17,7 +17,14 @@ from .gamepad_controller import render_gamepad_controller
 from .agent import format_worker_result_for_chat
 
 MAX_ITERATIONS = 25
+# MAX_ITERATIONS = 25  # Removed in favor of configurable value
 
+# Set up a sidebar input for max iterations (default 25)
+if "max_iterations" not in st.session_state:
+    st.session_state.max_iterations = 25
+st.session_state.max_iterations = st.sidebar.number_input(
+    "Max agent iterations", min_value=1, max_value=100, value=st.session_state.max_iterations, step=1
+)
 
 def display_messages():
     """Mostrar el historial de conversación."""
