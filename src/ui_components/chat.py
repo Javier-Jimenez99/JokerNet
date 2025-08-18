@@ -82,7 +82,8 @@ def render_chat_block():
                     st.session_state.chat_history.append({"role": "assistant", "content": last_msg})
                     
                 except Exception as e:
-                    error_msg = f"Error al procesar la solicitud: {str(e)}"
+                    logging.error("Exception occurred in render_chat_block", exc_info=True)
+                    error_msg = f"Error al procesar la solicitud ({type(e).__name__}): {str(e)}"
                     st.markdown(error_msg)
                     st.session_state.chat_history.append({"role": "assistant", "content": error_msg})
 
