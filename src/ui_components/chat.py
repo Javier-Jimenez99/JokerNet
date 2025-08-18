@@ -246,5 +246,4 @@ def render_chat(api_client):
         render_chat_interface()
     
     with controls_tab:
-        # La botonera del gamepad ahora funciona independientemente del modo
         render_gamepad_controller(api_client)
