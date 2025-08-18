@@ -15,7 +15,11 @@ def init_session_state():
         st.session_state.debug_mode = False
     if "agent" not in st.session_state:
         with st.spinner("Inicializando agente IA..."):
-            st.session_state.agent = create_agent()
+            try:
+                st.session_state.agent = create_agent()
+            except Exception as e:
+                st.error("Failed to initialize AI agent. Please check your configuration.")
+                raise
     if "deck" not in st.session_state:
         st.session_state.deck = "b_blue"
     if "stake" not in st.session_state:
