@@ -30,16 +30,20 @@ def render_agent_config():
                     st.error(f"❌ Error al recrear el agente: {e}")
                     return
                 st.success(f"🔄 Cambiado a modo {mcp_type}")
-                st.rerun()
+                st.rerun()            
         
         with col2:
-            debug_mode = st.checkbox(
-                "🐛 Modo Debug",
-                value=st.session_state.debug_mode,
-                help="Mostrar mensajes enviados al modelo",
-                key="debug_checkbox",
-                on_change=_on_debug_mode_change
+            st.session_state.max_iterations = st.number_input(
+                "Max agent iterations", min_value=1, max_value=100, value=st.session_state.max_iterations, step=1
             )
+
+        debug_mode = st.checkbox(
+            "🐛 Modo Debug",
+            value=st.session_state.debug_mode,
+            help="Mostrar mensajes enviados al modelo",
+            key="debug_checkbox",
+            on_change=_on_debug_mode_change
+        )
         
         # Mostrar estado actual
         debug_status = "🐛 ON" if st.session_state.debug_mode else "🐛 OFF"

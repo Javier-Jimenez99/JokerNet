@@ -9,6 +9,7 @@ from PIL import Image
 from transformers import AutoProcessor, AutoModelForCausalLM 
 import io
 import base64
+import traceback
 
 FASTAPI_URL = "http://localhost:8000"
 
@@ -45,6 +46,9 @@ def mouse_click(x: int, y: int) -> dict:
     Returns:
         dict: Status of the click operation
     """
+    # Sometimes click fails so it is ensure to double click
+    # There is no error in the game
+    clicks = 2
     try:
         payload = {
             "x": x,

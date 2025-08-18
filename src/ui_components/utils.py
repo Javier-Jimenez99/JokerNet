@@ -24,6 +24,8 @@ def init_session_state():
         st.session_state.deck = "b_blue"
     if "stake" not in st.session_state:
         st.session_state.stake = 1
+    if "max_iterations" not in st.session_state:
+        st.session_state.max_iterations = 25
 
 def render_vnc_viewer():
     """Renderizar visor VNC."""

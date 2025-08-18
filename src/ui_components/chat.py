@@ -16,16 +16,6 @@ import io
 from .gamepad_controller import render_gamepad_controller
 from .agent import format_worker_result_for_chat
 
-MAX_ITERATIONS = 25
-# MAX_ITERATIONS = 25  # Removed in favor of configurable value
-
-# Set up a sidebar input for max iterations (default 25)
-if "max_iterations" not in st.session_state:
-    st.session_state.max_iterations = 25
-st.session_state.max_iterations = st.sidebar.number_input(
-    "Max agent iterations", min_value=1, max_value=100, value=st.session_state.max_iterations, step=1
-)
-
 def display_messages():
     """Mostrar el historial de conversación."""
     for msg in st.session_state.chat_history:
@@ -54,8 +44,8 @@ def render_chat_block():
             
             with st.chat_message("assistant"):
                 config = {
-                    "recursion_limit": MAX_ITERATIONS,
-                    "configurable": {"max_iterations": MAX_ITERATIONS},
+                    "recursion_limit": st.session_state.max_iterations,
+                    "configurable": {"max_iterations": st.session_state.max_iterations},
                     "callbacks": [get_streamlit_cb(st.empty(), debug_mode=st.session_state.debug_mode)]
                 }
                 
@@ -69,7 +59,7 @@ def render_chat_block():
                                 "screen_descriptions": [],
                                 "consecutive_duplicates": 0,
                                 "recursion_count": 0,
-                                "max_recursions": MAX_ITERATIONS,
+                                "max_recursions": st.session_state.max_iterations,
                                 "history_limit": 20,
                                 "done": False
                             },
@@ -89,7 +79,7 @@ def render_chat_block():
                     st.session_state.chat_history.append({"role": "assistant", "content": last_msg})
                     
                 except Exception as e:
-                    logging.error("Exception occurred in render_chat_block", exc_info=True)
+                    print("Exception occurred in render_chat_block", exc_info=True)
                     error_msg = f"Error al procesar la solicitud ({type(e).__name__}): {str(e)}"
                     st.markdown(error_msg)
                     st.session_state.chat_history.append({"role": "assistant", "content": error_msg})
@@ -239,13 +229,6 @@ def render_chat(api_client):
     if "agent" not in st.session_state:
         st.info("Inicializando agente IA...")
         return
-    
-    # Información contextual
-    control_info = (
-        "🎮 **Gamepad Mode**: Describe una tarea específica que quieres que el agente realice usando controles de gamepad (ej: 'Navega al menú principal', 'Selecciona una carta', 'Ve a configuración')" 
-        if st.session_state.mcp_type == "gamepad" 
-        else "🖱️ **Mouse Mode**: Describe una tarea específica que quieres que el agente realice usando el mouse (ej: 'Haz clic en el botón Start', 'Selecciona la carta azul', 'Ve al menú de configuración')"
-    )
     
     # Crear tabs para Chat y Controles
     chat_tab, controls_tab = st.tabs(["💬 Chat IA", "🎮 Gamepad Controllers"])
