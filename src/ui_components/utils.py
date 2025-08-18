@@ -1,0 +1,23 @@
+import streamlit as st
+from .agent import create_agent
+from streamlit.components.v1 import html
+
+
+def init_session_state():
+    """Inicializar estado de la sesión."""
+    if "game_started" not in st.session_state:
+        st.session_state.game_started = False
+    if "chat_history" not in st.session_state:
+        st.session_state.chat_history = []
+    if "mcp_type" not in st.session_state:
+        st.session_state.mcp_type = "gamepad"  # Cambio: gamepad por defecto
+    if "debug_mode" not in st.session_state:
+        st.session_state.debug_mode = False
+    if "agent" not in st.session_state:
+        with st.spinner("Inicializando agente IA..."):
+            st.session_state.agent = create_agent()
+
+def render_vnc_viewer():
+    """Renderizar visor VNC."""
+    novnc_url = "http://localhost:6080/vnc.html?autoconnect=1&reconnect=1&resize=scale&view_only=1"
+    html(f'<iframe src="{novnc_url}" style="border:none;height:100vh;width:100%" allowfullscreen></iframe>', height=820)
