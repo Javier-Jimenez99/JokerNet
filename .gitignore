@@ -227,3 +227,6 @@ logs/
 *.temp
 Balatro Source/
 unsloth_compiled_cache/
+
+# Docker data directory (contains persistent volumes)
+BalatroDocker/data/

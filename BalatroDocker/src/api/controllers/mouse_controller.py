@@ -4,6 +4,7 @@ Mouse input controller for handling mouse actions and positioning.
 import pyautogui
 from typing import Dict, Any
 from fastapi import HTTPException
+import time
 
 from api.models.requests import MouseClickRequest, MouseMoveRequest, MouseDragRequest
 from api.utils.system import relative_to_absolute
@@ -18,7 +19,13 @@ async def mouse_click(request: MouseClickRequest) -> Dict[str, Any]:
         # Use coordinates directly as pixels
         pixel_x, pixel_y = int(request.x), int(request.y)
         
-        pyautogui.click(pixel_x, pixel_y, clicks=request.clicks, button=request.button)
+        #pyautogui.click(pixel_x, pixel_y, clicks=request.clicks, button=request.button)
+        for _ in range(request.clicks):
+            pyautogui.moveTo(pixel_x, pixel_y, duration=0)
+            pyautogui.mouseDown(button=request.button)
+            time.sleep(0.05)
+            pyautogui.mouseUp(button=request.button)
+
         return {
             "status": "success",
             "message": f"Clicked at pixel coordinates ({pixel_x}, {pixel_y}) with {request.button} button {request.clicks} time(s)",

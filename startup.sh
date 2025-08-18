@@ -16,4 +16,4 @@ cd ..
 sleep 10
 
 # Ejecutar Streamlit (los logs aparecerán aquí)
-streamlit run src/streamlit_app.py --server.port 8501
+streamlit run src/app.py --server.port 8501

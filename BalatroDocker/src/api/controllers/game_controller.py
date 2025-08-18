@@ -99,7 +99,7 @@ async def auto_start_game(request: AutoStartRequest) -> Dict[str, Any]:
         with open("/tmp/balatro_auto_start.json", "w") as f:
             json.dump(config, f)
         
-        return {"status": "configured", "config": config}
+        return {"status": "success", "config": config}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error: {e}")
 

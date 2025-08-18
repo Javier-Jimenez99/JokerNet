@@ -11,6 +11,7 @@ Esta implementación ejecuta Balatro en un contenedor Docker con acceso remoto a
 - ✅ **Logs** centralizados con Supervisor
 - ✅ **Resolución 1920x1080** optimizada para gaming
 - ✅ **Streamlit externo** para interfaz opcional
+- ✅ **Caché persistente** de modelos Hugging Face
 
 ## 🏗️ Arquitectura
 
@@ -40,6 +41,47 @@ sudo modprobe uinput
 sudo chmod 666 /dev/uinput
 ```
 
+#### WSL2 + GPU (Opcional)
+
+Para usar GPU en WSL2, sigue la [guía oficial](https://docs.nvidia.com/cuda/wsl-user-guide/index.html):
+
+```bash
+# 1. Instalar NVIDIA Container Toolkit
+distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
+curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | sudo apt-key add -
+curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.list | sudo tee /etc/apt/sources.list.d/nvidia-docker.list
+
+sudo apt update
+sudo apt install -y nvidia-container-toolkit nvidia-modprobe
+
+# 2. Configurar Docker daemon
+sudo tee /etc/docker/daemon.json > /dev/null << 'EOF'
+{
+    "default-runtime": "nvidia",
+    "runtimes": {
+        "nvidia": {
+            "args": [],
+            "path": "nvidia-container-runtime"
+        }
+    }
+}
+EOF
+
+sudo systemctl restart docker
+
+# 3. Crear dispositivos NVIDIA (ejecutar después de cada reinicio)
+sudo nvidia-modprobe -u -c=0 || {
+    sudo mknod /dev/nvidia0 c 195 0
+    sudo mknod /dev/nvidiactl c 195 255
+    sudo mknod /dev/nvidia-modeset c 195 254
+    sudo mknod /dev/nvidia-uvm c 243 0
+    sudo chmod 666 /dev/nvidia*
+}
+```
+
+**Error común**: "GPU access blocked by the operating system"
+- **Solución**: Usar `privileged: true` en docker-compose (ya incluido)
+
 ### 2. Construir y ejecutar el contenedor:
 
 ```bash
@@ -47,7 +89,16 @@ cd BalatroDocker
 docker-compose up -d
 ```
 
-### 3. Acceder a los servicios:
+### 3. Construir y ejecutar el contenedor:
+
+```bash
+cd BalatroDocker
+docker-compose up -d
+```
+
+**Nota**: La primera vez que se use el locator visual, los modelos de Hugging Face se descargarán automáticamente (puede tomar 5-10 minutos). Los modelos se almacenan en `./data/huggingface/` y persisten entre reinicios.
+
+### 4. Acceder a los servicios:
 
 | Servicio | URL | Descripción |
 |----------|-----|-------------|
@@ -293,8 +344,11 @@ docker exec container_name supervisorctl restart novnc
 - **Resolución**: 1920x1080 (configurable en `supervisord.conf`)
 - **Sin audio**: Por limitaciones del contenedor
 - **Input simulation**: Requiere privilegios para `/dev/uinput`
-- **Persistencia**: Steam data en `./data/steam`
+- **Persistencia**: 
+  - Steam data en `./data/steam`
+  - Modelos Hugging Face en `./data/huggingface`
 - **Mods**: Auto-configurados con Lovely mod loader
+- **Modelos IA**: PTA-1 para detección visual de elementos de UI
 
 ## 🆚 Comparación con otras soluciones
 
