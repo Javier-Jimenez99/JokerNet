@@ -71,8 +71,20 @@ def descriptions_are_similar(desc1: str, desc2: str) -> bool:
     
     return similarity > 0.8
 
-def ANALYZER_PROMPT() -> str:
-    return """You are a Screen Analyzer. Provide a concise description of the current game state.
+def ANALYZER_PROMPT(server_name: str = "mouse") -> str:
+    if server_name == "gamepad":
+        return """You are a Screen Analyzer. Provide a concise description of the current game state.
+
+Focus on:
+- Main UI elements visible
+- Current game context (menu, gameplay, dialog)
+- Current selection or highlighted elements
+- Available navigation options
+- Cards visible on screen
+
+Respond with a simple description (1-2 sentences max). Be consistent in terminology."""
+    else:
+        return """You are a Screen Analyzer. Provide a concise description of the current game state.
 
 Focus on:
 - Main UI elements visible
@@ -82,8 +94,9 @@ Focus on:
 
 Respond with a simple description (1-2 sentences max). Be consistent in terminology."""
 
-def WORKER_PROMPT() -> str:
-    return """You are a Balatro Game Controller.
+def WORKER_PROMPT(server_name: str = "mouse") -> str:
+    if server_name == "gamepad":
+        return """You are a Balatro Gamepad Controller.
 
 You receive:
 - Screenshot of current game state
@@ -91,12 +104,19 @@ You receive:
 - History of all screen descriptions
 - Count of consecutive duplicate screens
 
+CONTROL METHOD: You control the game using GAMEPAD BUTTONS only. Available buttons:
+- Navigation: LEFT, RIGHT, UP, DOWN (for menu navigation and selection)
+- Actions: A (confirm/select), B (cancel/back), X (special action), Y (special action)
+- Triggers: START (pause/menu), SELECT (back/cancel)
+- Shoulders: LB, LT, RB, RT (for additional actions)
+
 REASONING PROCESS (Chain of Thought):
 First, analyze the situation step by step:
 1. CURRENT STATE: What do I see in the screenshot?
 2. TASK PROGRESS: How does this relate to my assigned task?
 3. SCREEN HISTORY: Have I seen similar screens recently? Are we making progress?
-4. NEXT ACTION: What should I do next?
+4. CURRENT SELECTION: What appears to be currently selected or highlighted?
+5. NEXT ACTION: What gamepad button(s) should I press next?
 
 Then decide:
 
@@ -107,18 +127,61 @@ TERMINATION RULES:
 
 FORMAT:
 Think step by step, then either:
-1. Call exactly ONE control tool, OR  
+1. Call press_buttons with a sequence of buttons (e.g., "A", "LEFT RIGHT A", "START"), OR  
+2. Reply TASK_DONE with reasoning
+
+Example reasoning:
+"CURRENT STATE: I see the main menu with 'Start Game' highlighted.
+TASK PROGRESS: My task is to start the game, and the Start option is selected.
+SCREEN HISTORY: This is the first screen I've seen.
+CURRENT SELECTION: 'Start Game' appears to be highlighted.
+NEXT ACTION: I should press A to confirm the selection and start the game."
+
+Then take action or terminate."""
+    else:
+        return """You are a Balatro Mouse Controller.
+
+You receive:
+- Screenshot of current game state
+- Task to accomplish
+- History of all screen descriptions
+- Count of consecutive duplicate screens
+
+CONTROL METHOD: You control the game using MOUSE CLICKS and COORDINATES. You can:
+- Click at specific pixel coordinates
+- Drag between coordinates
+- View current mouse position and screen dimensions
+
+REASONING PROCESS (Chain of Thought):
+First, analyze the situation step by step:
+1. CURRENT STATE: What do I see in the screenshot?
+2. TASK PROGRESS: How does this relate to my assigned task?
+3. SCREEN HISTORY: Have I seen similar screens recently? Are we making progress?
+4. CLICKABLE ELEMENTS: What buttons, cards, or UI elements can I click?
+5. NEXT ACTION: What should I click or where should I move the mouse?
+
+Then decide:
+
+TERMINATION RULES:
+- If consecutive_duplicates >= 3: Reply TASK_DONE {"success": false, "reason": "stuck"}
+- If task completed: Reply TASK_DONE {"success": true, "reason": "completed"}
+- If task impossible: Reply TASK_DONE {"success": false, "reason": "impossible"}
+
+FORMAT:
+Think step by step, then either:
+1. Call exactly ONE mouse control tool (mouse_click, mouse_drag, etc.), OR  
 2. Reply TASK_DONE with reasoning
 
 Example reasoning:
 "CURRENT STATE: I see the main menu with a 'Start' button.
 TASK PROGRESS: My task is to start the game, and the Start button is visible.
 SCREEN HISTORY: This is the first screen I've seen.
+CLICKABLE ELEMENTS: I can see a Start button at coordinates around (960, 540).
 NEXT ACTION: I should click the Start button to complete the task."
 
 Then take action or terminate."""
 
-async def capture_node(state: AgentState, screenshot_tool) -> dict:
+async def capture_node(state: AgentState, screenshot_tool, server_name: str = "mouse") -> dict:
     current_count = state.get("recursion_count", 0) + 1
     max_rec = state.get("max_recursions", 120)
     
@@ -129,17 +192,23 @@ async def capture_node(state: AgentState, screenshot_tool) -> dict:
         res = await screenshot_tool.ainvoke({})
         data = json.loads(res) if isinstance(res, str) else res
         img = data.get("screenshot", "")
-        mouse_info = data.get("mouse_info", "")
+        
+        # Adaptar la información contextual según el tipo de servidor
+        if server_name == "gamepad":
+            context_info = "Using gamepad controls. Focus on navigation and button presses."
+        else:
+            mouse_info = data.get("mouse_info", "")
+            context_info = f"{mouse_info} Using mouse controls. Focus on clickable elements."
         
         screenshot = HumanMessage(content=[
-            {"type": "text", "text": f"{mouse_info} Current game state:"},
+            {"type": "text", "text": f"{context_info} Current game state:"},
             {"type": "image_url", "image_url": {"url": img}}
         ])
         return {"last_screenshot": screenshot, "recursion_count": current_count}
     except Exception as e:
         return {"last_screenshot": None, "recursion_count": current_count}
 
-async def analyze_node(state: AgentState, llm_analyzer) -> dict:
+async def analyze_node(state: AgentState, llm_analyzer, server_name: str = "mouse") -> dict:
     iteration = state.get("recursion_count", 0)
     screenshot = state.get("last_screenshot")
     
@@ -147,7 +216,7 @@ async def analyze_node(state: AgentState, llm_analyzer) -> dict:
         return {}
     
     try:
-        msgs = [SystemMessage(content=ANALYZER_PROMPT()), screenshot]
+        msgs = [SystemMessage(content=ANALYZER_PROMPT(server_name)), screenshot]
         resp = await llm_analyzer.ainvoke(
             msgs, 
             config={
@@ -178,20 +247,42 @@ async def analyze_node(state: AgentState, llm_analyzer) -> dict:
         "consecutive_duplicates": consecutive_duplicates
     }
 
-async def worker_node(state: AgentState, llm_worker) -> dict:
+def format_screen_context(state: AgentState, server_name: str) -> str:
+    """Format screen descriptions with context specific to the control method."""
+    screen_descriptions = state.get('screen_descriptions', [])
+    consecutive_duplicates = state.get("consecutive_duplicates", 0)
+    
+    if not screen_descriptions:
+        return "No previous screen states available."
+    
+    descriptions_text = '\n'.join(f"Screen {i+1}: {desc}" for i, desc in enumerate(screen_descriptions[-5:]))
+    
+    if server_name == "gamepad":
+        context = f"""Previous screen states (using gamepad navigation):
+{descriptions_text}
+
+Consecutive duplicate screens: {consecutive_duplicates}
+Remember: Use directional buttons (LEFT, RIGHT, UP, DOWN) to navigate menus and A to confirm selections."""
+    else:
+        context = f"""Previous screen states (using mouse control):
+{descriptions_text}
+
+Consecutive duplicate screens: {consecutive_duplicates}
+Remember: Click on specific UI elements using pixel coordinates."""
+    
+    return context
+
+async def worker_node(state: AgentState, llm_worker, server_name: str = "mouse") -> dict:
     iteration = state.get("recursion_count", 0)
 
-    msgs = [SystemMessage(content=WORKER_PROMPT())]
+    msgs = [SystemMessage(content=WORKER_PROMPT(server_name))]
     msgs.append(HumanMessage(
         content=f"This is your task: \n{state.get('task', '')}"
     ))
     
-    # Format screen descriptions safely
-    screen_descriptions = state.get('screen_descriptions', [])
-    descriptions_text = '\n'.join(screen_descriptions)
-    msgs.append(HumanMessage(
-        content=f"These are the previous screens states: \n{descriptions_text}"
-    ))
+    # Use the new formatting function for screen context
+    screen_context = format_screen_context(state, server_name)
+    msgs.append(HumanMessage(content=screen_context))
 
     # Incluir todo el historial de herramientas y resultados
     history = state.get("history_messages", [])
@@ -209,7 +300,8 @@ async def worker_node(state: AgentState, llm_worker) -> dict:
                 "iteration": iteration,
                 "task": state.get("task", "")[:50],
                 "consecutive_duplicates": state.get("consecutive_duplicates", 0),
-                "history_count": len(history)
+                "history_count": len(history),
+                "control_method": server_name
             }
         }
     )
@@ -307,12 +399,15 @@ async def create_worker(server_name: str = "mouse"):
         "mouse": {"transport":"streamable_http", "url":"http://localhost:8001/mouse/mcp"},
         "gamepad": {"transport":"streamable_http", "url":"http://localhost:8001/gamepad/mcp"}
     })
+    
+    # Get tools for the specified server
     tools = await client.get_tools(server_name=server_name)
+    print(f"🎮 Worker initialized with {server_name} controls. Available tools: {[getattr(t, 'name', 'unknown') for t in tools]}")
 
     screenshot_tool, control_tools = None, []
     for t in tools:
         tool_name = getattr(t, "name", "")
-        if tool_name == "get_screen":
+        if tool_name == "get_screen" or tool_name == "get_screen_with_cursor":
             screenshot_tool = t
         else:
             control_tools.append(t)
@@ -321,9 +416,9 @@ async def create_worker(server_name: str = "mouse"):
     toolnode = ToolNode(tools=control_tools)
 
     graph = StateGraph(AgentState)
-    graph.add_node("capture", partial(capture_node, screenshot_tool=screenshot_tool))
-    graph.add_node("analyze", partial(analyze_node, llm_analyzer=llm_analyzer))
-    graph.add_node("worker", partial(worker_node, llm_worker=llm_worker))
+    graph.add_node("capture", partial(capture_node, screenshot_tool=screenshot_tool, server_name=server_name))
+    graph.add_node("analyze", partial(analyze_node, llm_analyzer=llm_analyzer, server_name=server_name))
+    graph.add_node("worker", partial(worker_node, llm_worker=llm_worker, server_name=server_name))
     graph.add_node("tool", partial(tool_node, toolnode=toolnode))
     graph.add_node("finalize", finalize_node)
 
@@ -334,4 +429,9 @@ async def create_worker(server_name: str = "mouse"):
     graph.add_edge("tool", "capture")
     graph.add_edge("finalize", END)
 
-    return graph.compile()
+    compiled_graph = graph.compile()
+    
+    # Add metadata to the compiled graph for tracking
+    compiled_graph._server_name = server_name
+    
+    return compiled_graph

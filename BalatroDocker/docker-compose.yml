@@ -17,10 +17,9 @@ services:
       # Persistent Hugging Face models cache
       - ./data/huggingface:/root/.cache/huggingface
       # Mount host devices for input simulation
-      - /dev/uinput:/dev/uinput
       - /dev/input:/dev/input
     devices:
-      - /dev/uinput:/dev/uinput
+      - /dev/uinput:/dev/uinput:rwm
     ports:
       - "8000:8000"  # FastAPI
       - "8001:8001"  # MCP Server
@@ -35,4 +34,7 @@ services:
               capabilities: [gpu]
     shm_size: "8gb"
     privileged: true
+    cap_add:
+      - SYS_ADMIN
+      - SYS_RAWIO
     restart: unless-stopped
