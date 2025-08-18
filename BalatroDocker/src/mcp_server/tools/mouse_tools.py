@@ -50,7 +50,7 @@ def mouse_click(x: int, y: int) -> dict:
             "x": x,
             "y": y,
             "button": "left",
-            "clicks": 2
+            "clicks": clicks
         }
         
         response = requests.post(f"{FASTAPI_URL}/mouse/click", json=payload, timeout=10)
