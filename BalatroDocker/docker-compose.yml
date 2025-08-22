@@ -4,7 +4,7 @@ services:
       context: .
       dockerfile: Dockerfile
     image: balatro-api:latest
-    env_file: .env
+    env_file: ../.env
     environment:
       - GAME_SPEED=16
       - MOD_URLS=https://github.com/OceanRamen/Saturn/archive/refs/heads/main.zip
