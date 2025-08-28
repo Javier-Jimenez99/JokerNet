@@ -9,8 +9,8 @@ services:
       - GAME_SPEED=16
       - MOD_URLS=https://github.com/OceanRamen/Saturn/archive/refs/heads/main.zip
       - DISPLAY=:0
-      - NVIDIA_VISIBLE_DEVICES=all
-      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+      - NVIDIA_VISIBLE_DEVICES=${NVIDIA_VISIBLE_DEVICES:-}
+      - NVIDIA_DRIVER_CAPABILITIES=${NVIDIA_DRIVER_CAPABILITIES:-}
     volumes:
       # As Balatro is installed in startup, this volume is used to persist the Steam installation and authentication
       - ./data/steam:/root/.steam/steam
@@ -25,6 +25,16 @@ services:
       - "8001:8001"  # MCP Server
       - "5900:5900"  # VNC
       - "6080:80"    # <- host 6080 ➜ contenedor 80 (Nginx)
+    shm_size: "8gb"
+    privileged: true
+    cap_add:
+      - SYS_ADMIN
+      - SYS_RAWIO
+    restart: unless-stopped
+
+  # Servicio con GPU NVIDIA - solo se activa con profile 'gpu'
+  balatro-gpu:
+    extends: balatro
     deploy:
       resources:
         reservations:
@@ -32,9 +42,11 @@ services:
             - driver: nvidia
               count: all
               capabilities: [gpu]
-    shm_size: "8gb"
-    privileged: true
-    cap_add:
-      - SYS_ADMIN
-      - SYS_RAWIO
-    restart: unless-stopped
+    environment:
+      - GAME_SPEED=16
+      - MOD_URLS=https://github.com/OceanRamen/Saturn/archive/refs/heads/main.zip
+      - DISPLAY=:0
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+    profiles:
+      - gpu
