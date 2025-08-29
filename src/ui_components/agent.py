@@ -1,16 +1,22 @@
 import streamlit as st
 import asyncio
-from agents import create_worker
+from agents import create_agent as create_langgraph_agent
 
 
 @st.cache_resource
 def create_agent():
     """Crear agente Worker."""
     mcp_type = st.session_state.get("mcp_type", "gamepad")
+    max_worker_steps = st.session_state.get("max_worker_steps", 3)
+    max_planner_steps = st.session_state.get("max_planner_steps", 5)
     
     async def _create():
-        worker = await create_worker(server_name=mcp_type)
-        return worker
+        agent = await create_langgraph_agent(
+            server_name=mcp_type,
+            max_worker_steps=max_worker_steps,
+            max_planner_steps=max_planner_steps
+        )
+        return agent
     
     return asyncio.run(_create())
 

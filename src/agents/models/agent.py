@@ -1,6 +1,6 @@
 from typing_extensions import TypedDict
 from langchain_core.messages import AIMessage, BaseMessage
-from models import PlannerResponse
+from .planner import PlannerResponse
 
 
 class AgentState(TypedDict):

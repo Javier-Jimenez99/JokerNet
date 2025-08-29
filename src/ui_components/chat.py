@@ -7,6 +7,7 @@ import asyncio
 from streamlit.runtime.scriptrunner import add_script_run_ctx, get_script_run_ctx
 from streamlit.delta_generator import DeltaGenerator
 from langchain_core.callbacks.base import BaseCallbackHandler
+from langchain_core.messages import AIMessage, HumanMessage
 from typing import Callable, TypeVar
 import inspect
 import json
@@ -15,13 +16,14 @@ import io
 
 from .gamepad_controller import render_gamepad_controller
 from .agent import format_worker_result_for_chat
+from langchain_core.messages import HumanMessage
 
 def display_messages():
     """Mostrar el historial de conversación."""
     for msg in st.session_state.chat_history:
-        if msg["role"] != "system":
-            with st.chat_message(msg["role"]):
-                st.markdown(msg["content"])
+        role = "user" if isinstance(msg, HumanMessage) else "assistant"
+        with st.chat_message(role):
+            st.markdown(msg.content)
 
 
 @st.fragment
@@ -36,7 +38,7 @@ def render_chat_block():
     if user_input := st.chat_input(placeholder="Describe la tarea que quieres que realice..."):
         # Añadir mensaje del usuario al historial
         history = st.session_state.get("chat_history", [])
-        history.append({"role": "user", "content": user_input})
+        history.append(HumanMessage(content=user_input))
         st.session_state.chat_history = history
 
         with main_container:
@@ -50,36 +52,28 @@ def render_chat_block():
                 }
                 
                 try:
-                    # Usar el Worker con su entrada por defecto
-                    response = asyncio.run(
-                        st.session_state.agent.ainvoke(
-                            input={
-                                "task": user_input,
-                                "history_messages": [],
-                                "screen_descriptions": [],
-                                "consecutive_duplicates": 0,
-                                "recursion_count": 0,
-                                "max_recursions": st.session_state.max_iterations,
-                                "history_limit": 20,
-                                "done": False
-                            },
-                            config=config
+                    with st.spinner("Ejecutando agente..."):
+                        # Usar el Worker con su entrada por defecto
+                        response = asyncio.run(
+                            st.session_state.agent.ainvoke(
+                                input={
+                                    "input": history
+                                },
+                                config=config
+                            )
                         )
-                    )
-                    
-                    # Obtener el resultado del worker
-                    if "result" in response and response["result"]:
-                        result = response["result"]
-                        # Usar la función de formateo para el chat
-                        last_msg = format_worker_result_for_chat(result)
-                    else:
-                        last_msg = "No se pudo obtener un resultado del worker."
+                        # Obtener el resultado del worker
+                        if "result" in response and response["output"]:
+                            result = response["output"]
+                        else:
+                            result = "No se pudo obtener un resultado del agente."
 
-                    st.markdown(last_msg)
-                    st.session_state.chat_history.append({"role": "assistant", "content": last_msg})
-                    
+                        st.markdown(result)
+                        st.session_state.chat_history.append(
+                            AIMessage(content=result)
+                        )
                 except Exception as e:
-                    print("Exception occurred in render_chat_block", exc_info=True)
+                    print("Exception occurred in render_chat_block", e)
                     error_msg = f"Error al procesar la solicitud ({type(e).__name__}): {str(e)}"
                     st.markdown(error_msg)
                     st.session_state.chat_history.append({"role": "assistant", "content": error_msg})
@@ -94,12 +88,31 @@ def render_chat_interface():
     # Renderizar chat
     render_chat_block()
 
+class LanggraphCallbackHandler(BaseCallbackHandler):
+    def __init__(self, parent_container: DeltaGenerator):
+        self.expander = parent_container.expander("📤 Model Procesing")
+
+    def on_chain_start(self, serialized, input_str, **kwargs):
+        node = kwargs.get("name", "unknown")
+
+        if node == "planner":
+            self.expander.write("🧠 **Running Planner**")  
+        elif node == "worker_visualizer":
+            self.expander.write("👁️ **Running Worker Visualizer**")
+        elif node == "planner_visualizer":
+            self.expander.write("👁️ **Running Planner Visualizer**")
+        elif node == "worker":
+            self.expander.write("👷🏼 **Running Worker**")
+        elif node == "tool":
+            self.expander.write("🔧 **Running Tool**")
+        elif node == "output":
+            self.expander.write("🏁 **Generating Output**")
+
 class CustomToolCallbackHandler(BaseCallbackHandler):
     """Callback personalizado para mostrar llamadas de tools."""
 
-    def __init__(self, parent_container, debug_mode=False):
+    def __init__(self, parent_container):
         self.parent_container = parent_container
-        self.debug_mode = debug_mode
         self.current_tool_expander = None
         self.tool_counter = 0
 
@@ -179,10 +192,7 @@ class CustomToolCallbackHandler(BaseCallbackHandler):
             st.error(f"Error al mostrar la imagen: {str(e)}")
 
     def on_chat_model_start(self, serialized, messages, **kwargs):
-        """Mostrar mensajes enviados al modelo si debug mode está activado."""
-        if not self.debug_mode:
-            return
-            
+        """Mostrar mensajes enviados al modelo si debug mode está activado."""            
         batch = messages[0] if messages and len(messages) > 0 else []
         snapshot = []
         
@@ -216,7 +226,9 @@ def get_streamlit_cb(parent_container: DeltaGenerator, debug_mode: bool = False)
 
         return wrapper
 
-    st_cb = CustomToolCallbackHandler(parent_container, debug_mode=debug_mode)
+    if debug_mode:
+        st_cb = CustomToolCallbackHandler(parent_container)
+    st_cb = LanggraphCallbackHandler(parent_container)
 
     for method_name, method_func in inspect.getmembers(st_cb, predicate=inspect.ismethod):
         if method_name.startswith('on_'):

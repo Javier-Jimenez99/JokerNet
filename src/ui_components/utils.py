@@ -26,6 +26,10 @@ def init_session_state():
         st.session_state.stake = 1
     if "max_iterations" not in st.session_state:
         st.session_state.max_iterations = 25
+    if "max_worker_steps" not in st.session_state:
+        st.session_state.max_worker_steps = 3
+    if "max_planner_steps" not in st.session_state:
+        st.session_state.max_planner_steps = 5
 
 def render_vnc_viewer():
     """Renderizar visor VNC."""

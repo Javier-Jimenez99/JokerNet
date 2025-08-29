@@ -8,8 +8,8 @@ import json
 import time
 from dotenv import load_dotenv
 from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
-from models import PlannerResponse, GameState, AgentState
-from prompts import visualizer_system_prompt, worker_system_prompt, planner_system_prompt
+from .models import PlannerResponse, GameState, AgentState
+from .prompts import visualizer_system_prompt, worker_system_prompt, planner_system_prompt
 from typing import Literal
 
 load_dotenv()

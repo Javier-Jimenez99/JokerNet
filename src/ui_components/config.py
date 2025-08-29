@@ -31,11 +31,20 @@ def render_agent_config():
                     return
                 st.success(f"🔄 Cambiado a modo {mcp_type}")
                 st.rerun()            
-        
-        with col2:
+
             st.session_state.max_iterations = st.number_input(
                 "Max agent iterations", min_value=1, max_value=100, value=st.session_state.max_iterations, step=1
             )
+        
+        with col2:
+            st.session_state.max_planner_steps = st.number_input(
+                "Max planner steps", min_value=1, max_value=20, value=st.session_state.max_planner_steps, step=1
+            )
+
+            st.session_state.max_worker_steps = st.number_input(
+                "Max worker steps", min_value=1, max_value=20, value=st.session_state.max_worker_steps, step=1
+            )
+            
 
         debug_mode = st.checkbox(
             "🐛 Modo Debug",

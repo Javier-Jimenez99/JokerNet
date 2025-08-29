@@ -25,7 +25,7 @@ class ShopItem(BaseModel):
 class PickedHand(BaseModel):
     """Represents the complete picked hand with cards, hand type, and values."""
     picked_cards: Optional[List[str]] = Field(None, description="A list of all cards selected for play (visually shifted upwards). If unable to identify individual picked cards after careful examination, this can be null while still providing hand_type, level, chips, and bonus.")
-    correct_picked_cards: bool = Field(..., description="Whether the picked cards correspond with the hand type, correcly."),
+    correct_picked_cards: bool = Field(..., description="Whether the picked cards correspond with the hand type, correcly.")
     hand_type: str = Field(..., description="The type of poker hand formed by the picked cards (e.g., 'High Card', 'Pair', 'Two Pair', 'Three of a Kind', 'Straight', 'Flush', 'Full House', 'Four of a Kind', 'Straight Flush', 'Royal Flush').")
     level: int = Field(..., description="The level of the hand type (e.g., 'lvl.1', 'lvl.2', etc.). Extract the number only.")
     chips: int = Field(..., description="The base chips value (blue number) for this hand type.")
