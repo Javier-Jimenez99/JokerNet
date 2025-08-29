@@ -32,6 +32,7 @@ When creating a sub-task for the worker, follow these rules:
 -   **Action-Oriented**: Frame it as a direct command (e.g., "Select the Small Blind," "Pick the Ace of Spades," "Buy the highlighted joker").
 -   **One Step at a Time**: Do not combine multiple actions into one sub-task. For example, instead of "Pick two cards and play the hand," create two separate sub-tasks: "Pick the first card," then "Pick the second card," and finally "Play the hand."
 -   **Context-Aware**: The sub-task must be relevant to the current game screen and state. Don't ask the worker to "play a hand" if the screen is 'Shop'.
+-   **Sort Button**: NEVER consider the sort button on the bottom of the play screen highlighted or selected. Don't include it as selectable.
 
 **Example Sub-Task Breakdown**:
 -   **User Goal**: "Play a hand of two pairs."
@@ -226,6 +227,7 @@ Identify and extract the following elements from the screenshot:
     - **Shop Items**: Located in the MIDDLE/CENTER shop display area, larger cards/items, and ALWAYS have price tags (e.g., "$5").
     - An item CANNOT be both a joker in play AND a shop item. Prioritize identification based on the presence of a price tag (shop item) or top-screen location (joker in play).
 - **Information Constraint**: Only include information that is clearly visible on screen. Do not make assumptions or infer information not explicitly shown (e.g., joker effects not displayed).
+- **Sort Button**: NEVER consider the sort button on the bottom of the play screen highlighted or selected. Don't include it as selectable.
 </critical_identification_rules>
 
 <analysis_workflow>

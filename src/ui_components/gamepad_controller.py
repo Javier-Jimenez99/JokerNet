@@ -7,11 +7,11 @@ import streamlit as st
 
 @st.fragment
 def render_gamepad_controller(api_client):
-    """Interfaz visual del mando de gamepad."""
+    """Visual interface for the gamepad controller."""
     st.markdown("### 🎮 Gamepad Controllers")
-    
-    # Layout del gamepad
-    # Fila superior - Gatillos
+
+    # Gamepad layout
+    # Top row - Triggers
     trigger_col1, trigger_col2, trigger_col3, trigger_col4 = st.columns([1, 1, 1, 1])
     with trigger_col1:
         if st.button("LT", key="lt", help="Left Trigger"):
@@ -25,36 +25,36 @@ def render_gamepad_controller(api_client):
     with trigger_col4:
         if st.button("RT", key="rt", help="Right Trigger"):
             api_client.send_gamepad_command("RT")
-    
+
     st.markdown("---")
-    
-    # Fila principal del gamepad
+
+    # Main row of the gamepad
     left_section, center_section, right_section = st.columns([2, 1, 2])
-    
-    # Sección izquierda - D-Pad
+
+    # Left section - D-Pad
     with left_section:
         st.markdown("**🕹️ D-Pad**")
         _render_dpad(api_client)
-    
-    # Sección central
+
+    # Center section
     with center_section:
-        st.markdown("**⚙️ Sistema**")
+        st.markdown("**⚙️ System**")
         _render_system_buttons(api_client)
-    
-    # Sección derecha - Botones de acción
+
+    # Right section - Action buttons
     with right_section:
-        st.markdown("**🎯 Acción**")
+        st.markdown("**🎯 Action**")
         _render_action_buttons(api_client)
 
 
 def _render_dpad(api_client):
-    """Renderizar D-Pad."""
+    """Render D-Pad."""
     # D-Pad layout
     _, up_col, _ = st.columns([1, 1, 1])
     with up_col:
         if st.button("🔼", key="up", help="UP"):
             api_client.send_gamepad_command("UP")
-    
+
     left_col, _, right_col = st.columns([1, 1, 1])
     with left_col:
         if st.button("◀️", key="left", help="LEFT"):
@@ -62,7 +62,7 @@ def _render_dpad(api_client):
     with right_col:
         if st.button("▶️", key="right", help="RIGHT"):
             api_client.send_gamepad_command("RIGHT")
-    
+
     _, down_col, _ = st.columns([1, 1, 1])
     with down_col:
         if st.button("🔽", key="down", help="DOWN"):
@@ -70,31 +70,31 @@ def _render_dpad(api_client):
 
 
 def _render_system_buttons(api_client):
-    """Renderizar botones del sistema."""
+    """Render system buttons."""
     if st.button("SELECT", key="select", help="Select Button"):
         api_client.send_gamepad_command("SELECT")
-    
+
     if st.button("START", key="start", help="Start Button"):
         api_client.send_gamepad_command("START")
 
 
 def _render_action_buttons(api_client):
-    """Renderizar botones de acción."""
-    # Botones de acción layout tipo Xbox
+    """Render action buttons."""
+    # Xbox-style action buttons layout
     _, y_col, _ = st.columns([1, 1, 1])
     with y_col:
-        if st.button("Y", key="y", help="Y Button - Amarillo"):
+        if st.button("Y", key="y", help="Y Button - Yellow"):
             api_client.send_gamepad_command("Y")
-    
+
     x_col, _, b_col = st.columns([1, 1, 1])
     with x_col:
-        if st.button("X", key="x", help="X Button - Azul"):
+        if st.button("X", key="x", help="X Button - Blue"):
             api_client.send_gamepad_command("X")
     with b_col:
-        if st.button("B", key="b", help="B Button - Rojo"):
+        if st.button("B", key="b", help="B Button - Red"):
             api_client.send_gamepad_command("B")
-    
+
     _, a_col, _ = st.columns([1, 1, 1])
     with a_col:
-        if st.button("A", key="a", help="A Button - Verde"):
+        if st.button("A", key="a", help="A Button - Green"):
             api_client.send_gamepad_command("A")
