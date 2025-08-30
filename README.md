@@ -490,46 +490,25 @@ The Model Context Protocol server enables seamless AI agent integration with pow
 
 *For setup instructions, see [Installation Guide](#-installation-and-setup)*
 
-## ⚠️ **Important Notice: Mouse Controller Status**
+## ⚠️ **Mouse Controller Status**
 
-### **Mouse Control - Under Development**
+**⚠️ WARNING: Mouse control is currently under development and does not work yet.**
 
-**⚠️ WARNING: The mouse controller is currently under development and does not work yet.**
+The system supports both gamepad and mouse control modes, but mouse functionality is not operational. The gamepad controller works reliably for automated gameplay, while mouse interaction requires additional development work.
 
-While the system supports both gamepad and mouse control modes, the mouse control functionality is not operational at this time. The gamepad controller works reliably, but mouse-based interaction requires additional development.
+### **Technical Challenges**
+I attempted to implement mouse control using AI vision models (HuggingFace ASKUI/PTA-1) for object detection, but encountered significant challenges:
+- **Card Detection**: The AI model couldn't reliably identify Balatro's playing cards
+- **UI Recognition**: Difficulty detecting buttons and interactive elements
+- **Visual Complexity**: Balatro's artistic designs and animations made detection challenging
+- **Real-time Performance**: Game state changes faster than AI processing
 
-### **Technical Challenges & Attempts**
+### **Current Solution & Future Plans**
+- **Use Gamepad Control**: Primary method that works reliably
+- **Manual Mouse**: Direct interaction through noVNC interface when needed
+- **Future Development**: Custom vision models and computer vision pipelines for mouse control
 
-I attempted to implement mouse control using advanced AI techniques:
-
-#### **Grounding AI Approach**
-- **Model Used**: HuggingFace `ASKUI/PTA-1` (Pointing and Text Recognition AI)
-- **Purpose**: Grounding AI for object detection and UI element recognition
-- **Expected Outcome**: Automatic detection of cards, buttons, and interactive elements in Balatro
-
-#### **Implementation Challenges**
-- **Card Detection Failure**: The `ASKUI/PTA-1` model was unable to reliably detect Balatro's playing cards
-- **UI Element Recognition**: Difficulty in identifying buttons, text, and interactive components
-- **Game State Analysis**: Inconsistent results when trying to locate game elements programmatically
-
-#### **Root Causes**
-- **Visual Complexity**: Balatro's artistic card designs and dynamic animations made detection challenging
-- **Resolution Variability**: Different screen resolutions affected detection accuracy
-- **Real-time Updates**: Game state changes faster than AI processing could keep up
-- **Model Limitations**: The grounding AI model wasn't trained on gaming-specific visual patterns
-
-### **Current Workaround**
-- **Use Gamepad Control**: The primary control method that works reliably
-- **Manual Mouse Control**: Direct mouse interaction through the noVNC interface
-- **Hybrid Approach**: Combining gamepad automation with manual mouse interventions
-
-### **Future Development Plans**
-- **Custom Vision Models**: Training specialized models for Balatro-specific object detection
-- **Computer Vision Pipeline**: Implementing robust image processing and feature extraction
-- **Reinforcement Learning**: Using RL agents trained specifically for mouse control
-- **Alternative AI Models**: Exploring other grounding AI models optimized for gaming
-
-**For now, please use the gamepad controller for automated gameplay. Mouse control will be available in future updates.**
+**For now, please use the gamepad controller for automated gameplay.**
 
 ## 📦 Installation and Setup
 
@@ -624,59 +603,18 @@ AZURE_OPENAI_API_VERSION=2024-05-01-preview
 
 ## 🚀 Future Work & Extensions
 
-JokerNet represents a **versatile platform** for **AI-powered game automation** that can be extended far beyond Balatro, demonstrating the **scalability** of the current architecture.
+JokerNet's modular architecture enables easy extension to other games and advanced AI capabilities.
 
 ### 🎮 **Multi-Game Support**
-
-The **modular architecture** makes JokerNet **easily extensible** to other games with minimal modifications:
-
-#### **Strategy Games**
-- **Civilization VI**: Turn-based strategy with resource management and diplomatic AI
-- **Stardew Valley**: Farming simulation with optimization algorithms
-- **Factorio**: Factory automation with supply chain optimization
-
-#### **Action & RPG Games**
-- **Hades**: Roguelike action with combat pattern recognition
-- **Slay the Spire**: Card-based combat with deck optimization
-- **Risk of Rain 2**: Third-person shooter with item optimization
-
-#### **Simulation Games**
-- **The Sims 4**: Life simulation with personality optimization
-- **Cities: Skylines**: City management with traffic optimization
-- **Planet Coaster**: Theme park design with crowd flow analysis
+- **Strategy Games**: Civilization VI, Factorio
+- **Action/RPG**: Slay the Spire, Hades
+- **Simulation**: Cities: Skylines, The Sims 4
 
 ### 🛠️ **Technical Enhancements**
-
-#### **Advanced AI Capabilities**
-- **Reinforcement Learning**: PPO/DQN algorithms for complex decision-making
-- **Multi-Modal Learning**: Combine visual, textual, and audio inputs
-- **Meta-Learning**: Enable agents to learn how to learn
-
-#### **Performance Optimizations**
-- **Edge Computing**: Deploy lightweight models on edge devices
-- **Model Quantization**: Optimize for resource-constrained devices
-- **Real-time Inference**: Sub-millisecond response times
-
-#### **Enhanced Control Systems**
-- **Voice Control**: Natural language processing for hands-free interaction
-- **Gesture Recognition**: Computer vision-based gesture control
-- **Mouse Control**: Complete implementation of mouse interaction (currently under development)
-
-### � **Roadmap**
-
-#### **Phase 1: Core Expansion (3-6 months)**
-- Multi-game support for 3+ additional titles
-- Enhanced visual analysis capabilities
-- Mouse control implementation
-
-#### **Phase 2: Advanced Features (6-12 months)**
-- Reinforcement learning integration
-- Cross-platform compatibility
-- Plugin ecosystem development
-
----
-
-**JokerNet's modular design enables seamless adaptation to virtually any game while pushing the boundaries of AI-driven gaming innovation.**
+- **Reinforcement Learning**: PPO/DQN for complex decisions
+- **Multi-Modal AI**: Visual + textual + audio processing
+- **Performance**: Edge computing, model quantization
+- **Controls**: Voice control, gesture recognition, mouse control
 
 ## 📄 License
 
