@@ -17,9 +17,10 @@ def render_agent_config():
             old_mcp_type = st.session_state.mcp_type
             mcp_type = st.selectbox(
                 "MCP Type:",
-                ["mouse", "gamepad"],
-                index=0 if st.session_state.mcp_type == "mouse" else 1,
+                ["gamepad"],
+                index=0,
                 key="mcp_selector",
+                help="Select the type of controller to use. By the moment mouse is disabled"
             )
 
             if mcp_type != old_mcp_type:
