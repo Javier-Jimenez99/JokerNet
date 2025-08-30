@@ -6,7 +6,11 @@
 [![Azure OpenAI](https://img.shields.io/badge/Azure-OpenAI-purple.svg)](https://azure.microsoft.com/en-us/products/ai-services/openai-service/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-> **Transform your Balatro gameplay with cutting-edge AI automation** 🤖✨
+> **Transform your Balatro gameplay with## 🚀 Future Work & Extensions
+
+*Note: Many features described below represent potential enhancements and extensions to the current system, not existing capabilities.*
+
+JokerNet represents a **foundational framework** for **AI-powered game automation** that can be extended far beyond Balatro. This section outlines potential enhancements and broader applications that demonstrate the **scalability** and **versatility** of the current architecture.tting-edge AI automation** 🤖✨
 
 The system integrates **Azure OpenAI** for intelligent reasoning, **Docker** for scalable deployment, and **custom mods** for enhanced game interaction, making it a comprehensive solution for **automated gaming** and beyond.
 
@@ -16,6 +20,10 @@ Built with **state-of-the-art AI frameworks** like **LangChain** and **LangGraph
 
 - [🚀 Key Features](#-key-features)
 - [🏗️ System Architecture](#️-system-architecture)
+- [🤖 Multiagent System with LangGraph](#-multiagent-system-with-langgraph)
+- [🌐 Streamlit Web Interface](#-streamlit-web-interface)
+- [⚠️ Mouse Controller Status](#️-mouse-controller-status)
+- [🐳 Docker Environment: Balatro with Enhanced Automation](#-docker-environment-balatro-with-enhanced-automation)
 - [🤖 Multiagent System with LangGraph](#-multiagent-system-with-langgraph)
 - [🌐 Streamlit Web Interface](#-streamlit-web-interface)
 - [🐳 Docker Environment: Balatro with Enhanced Automation](#-docker-environment-balatro-with-enhanced-automation)
@@ -32,7 +40,7 @@ Built with **state-of-the-art AI frameworks** like **LangChain** and **LangGraph
 
 | 🎯 **AI-Powered Gameplay** | 🎮 **Dual Control Methods** | 👁️ **Real-Time Vision** |
 |:---:|:---:|:---:|
-| Multiagent orchestration using LangGraph for coordinated strategic decisions | Seamless switching between gamepad and mouse control with intelligent adaptation | Computer vision-powered game state recognition and dynamic planning |
+| Multiagent orchestration using LangGraph for coordinated strategic decisions | Gamepad control (primary) + Mouse control (under development) | Computer vision-powered game state recognition and dynamic planning |
 | [Learn more →](#-multiagent-system-with-langgraph) | [See interface →](#-streamlit-web-interface) | [Explore architecture →](#️-system-architecture) |
 
 | 🌐 **Modern Web UI** | 🐳 **Containerized** | 🔧 **Custom Mods** |
@@ -72,12 +80,13 @@ graph TB
         G[MCP Server<br/>Port 8001]
     end
 
+    A --> F
     A --> B
-    B --> D
-    C --> F
+    A --> C
     C --> G
     F --> D
     G --> D
+    B --> D
     E --> D
 
     style A fill:#e1f5fe
@@ -88,9 +97,10 @@ graph TB
 
 **Architecture Highlights:**
 - **🔄 Multi-layered Design**: Clear separation of concerns across UI, orchestration, integration, and API layers
-- **📡 Service Mesh**: Interconnected services communicating through well-defined APIs
+- **📡 Service Mesh**: Streamlit interfaces with API, VNC, and multiagent system independently
 - **🛡️ Fault Tolerance**: Isolated components with graceful error handling
-- **⚡ Performance**: Optimized for real-time game automation and AI processing
+- **⚡ Performance**: Optimized for responsive game automation and AI processing
+- **🔗 Dual Control Paths**: Both REST API and MCP server provide game control capabilities
 
 *For detailed agent orchestration, see [Multiagent System](#-multiagent-system-with-langgraph)*
 
@@ -108,7 +118,7 @@ The multiagent architecture features three specialized agents, each with distinc
 |:---:|:---:|:---:|:---:|
 | 🧠 **Planner Agent** | Strategic Director | High-level decision making | Task decomposition, strategic planning |
 | 👁️ **Visualizer Agent** | Vision Specialist | Computer vision analysis | Screenshot processing, game state extraction |
-| ⚙️ **Worker Agent** | Execution Expert | Action implementation | Gamepad control, mouse interaction |
+| ⚙️ **Worker Agent** | Execution Expert | Action implementation | Gamepad control (primary), mouse interaction (under development) |
 
 </div>
 
@@ -131,7 +141,34 @@ class AgentState(TypedDict):
 
 ### 📊 Visual Workflow Diagram
 
-![LangGraph Workflow](compiled_graph_mermaid.png)
+```mermaid
+---
+config:
+  flowchart:
+    curve: linear
+---
+graph TD;
+	__start__([<p>__start__</p>]):::first
+	planner_visualizer(planner_visualizer)
+	planner(planner)
+	worker_visualizer(worker_visualizer)
+	worker(worker)
+	tool(tool)
+	output(output)
+	__end__([<p>__end__</p>]):::last
+	__start__ --> planner_visualizer;
+	planner -. &nbsp;end&nbsp; .-> output;
+	planner -.-> worker_visualizer;
+	planner_visualizer --> planner;
+	tool --> worker_visualizer;
+	worker -.-> planner;
+	worker -.-> tool;
+	worker_visualizer --> worker;
+	output --> __end__;
+	classDef default fill:#f2f0ff,line-height:1.2
+	classDef first fill-opacity:0
+	classDef last fill:#bfb6fc
+```
 
 **🔍 Workflow Breakdown:**
 
@@ -141,7 +178,7 @@ class AgentState(TypedDict):
 4. **🔀 Conditional Routing**: Intelligent decision branching based on planner actions
 5. **👁️ Worker-Visualizer Node**: Context-aware screenshot capture for execution
 6. **⚙️ Worker Node**: Precise action planning and tool orchestration
-7. **🎮 Tool Node**: Direct game control execution (gamepad/mouse actions)
+7. **🎮 Tool Node**: Direct game control execution (gamepad actions - mouse under development)
 8. **🔄 Conditional Worker Routing**: Adaptive loop control with success/failure handling
 9. **📤 Output Node**: Final result formatting and user response delivery
 
@@ -149,7 +186,7 @@ class AgentState(TypedDict):
 - **⏱️ Max Step Limits**: Prevents infinite loops (5 planner steps, 3 worker steps)
 - **💾 State Persistence**: Maintains conversation history and game state across iterations
 - **🛟 Error Handling**: Graceful degradation and intelligent completion detection
-- **🔧 Tool Integration**: Seamless MCP server integration for game control
+- **🔧 Tool Integration**: **Exclusive MCP server integration** for game control (no direct API usage)
 
 *This architecture enables complex decision-making while ensuring system reliability and user control. For the web interface that interacts with these agents, see [Streamlit Interface](#-streamlit-web-interface)*
 
@@ -163,10 +200,10 @@ JokerNet features a modern, responsive Streamlit application that provides an in
 
 | **Feature** | **Description** | **Benefits** |
 |:---:|:---:|:---:|
-| 📺 **Real-time Game View** | Embedded noVNC viewer for live game monitoring | Instant visual feedback and control |
-| ⚙️ **Agent Configuration** | Easy switching between gamepad and mouse control modes | Flexible automation strategies |
+| 📺 **Live Game View** | Embedded noVNC viewer for game monitoring | Visual feedback and control |
+| ⚙️ **Agent Configuration** | Direct API calls for game and agent settings | Flexible automation strategies |
 | 💬 **Chat Interface** | Natural language interaction with AI agents | Intuitive user experience |
-| 🎯 **Run Configuration** | Deck selection, stake adjustment, and game parameters | Customized gameplay scenarios |
+| 🎯 **Run Configuration** | Deck selection, stake adjustment via API | Customized gameplay scenarios |
 | 📊 **Progress Monitoring** | Live updates on agent actions and game state | Transparent automation process |
 
 </div>
@@ -202,7 +239,7 @@ JokerNet features a modern, responsive Streamlit application that provides an in
 
 **What to Capture:**
 - Focus on the configuration panel/sidebar
-- Show control method selection (Gamepad vs Mouse)
+- Show control method selection (Gamepad vs Mouse - mouse under development)
 - Display AI model settings and parameters
 - Include deck selection dropdown with available options
 - Show stake level selector
@@ -210,7 +247,7 @@ JokerNet features a modern, responsive Streamlit application that provides an in
 - Capture parameter validation or help text
 
 **Key Elements to Include:**
-- ✅ Control method toggle (Gamepad/Mouse)
+- ✅ Control method toggle (Gamepad/Mouse - mouse under development)
 - ✅ AI model selection
 - ✅ Deck and stake configuration
 - ✅ Parameter settings
@@ -223,7 +260,7 @@ JokerNet features a modern, responsive Streamlit application that provides an in
 *📍 **File:** `screenshots/game_control.png`*
 
 **What to Capture:**
-- Show real-time game state monitoring
+- Show game state monitoring and agent activity
 - Display agent action history or current activity
 - Include manual override controls if available
 - Show progress indicators or completion status
@@ -231,7 +268,7 @@ JokerNet features a modern, responsive Streamlit application that provides an in
 - Display performance metrics (response time, success rate)
 
 **Key Elements to Include:**
-- ✅ Real-time game state display
+- ✅ Game state display
 - ✅ Agent action log/monitoring
 - ✅ Manual control options
 - ✅ Performance metrics
@@ -266,15 +303,14 @@ JokerNet features a modern, responsive Streamlit application that provides an in
 
 **What to Capture:**
 - Show the system actively playing Balatro
-- Display real-time decision making
-- Include visual feedback of agent actions
+- Display decision making and visual feedback of agent actions
 - Show game state analysis overlays (optional)
 - Capture successful card plays or strategic decisions
 - Display the coordination between agents
 
 **Key Elements to Include:**
 - ✅ Active gameplay automation
-- ✅ Real-time decision display
+- ✅ Decision display
 - ✅ Agent coordination
 - ✅ Game state analysis
 - ✅ Successful actions
@@ -308,6 +344,47 @@ screenshots/
 
 *For the underlying Docker environment powering this interface, see [Docker Environment](#-docker-environment-balatro-with-enhanced-automation)*
 
+## ⚠️ **Important Notice: Mouse Controller Status**
+
+### **Mouse Control - Under Development**
+
+**⚠️ WARNING: The mouse controller is currently under development and does not work yet.**
+
+While the system supports both gamepad and mouse control modes, the mouse control functionality is not operational at this time. The gamepad controller works reliably, but mouse-based interaction requires additional development.
+
+### **Technical Challenges & Attempts**
+
+I attempted to implement mouse control using advanced AI techniques:
+
+#### **Grounding AI Approach**
+- **Model Used**: HuggingFace `ASKUI/PTA-1` (Pointing and Text Recognition AI)
+- **Purpose**: Grounding AI for object detection and UI element recognition
+- **Expected Outcome**: Automatic detection of cards, buttons, and interactive elements in Balatro
+
+#### **Implementation Challenges**
+- **Card Detection Failure**: The `ASKUI/PTA-1` model was unable to reliably detect Balatro's playing cards
+- **UI Element Recognition**: Difficulty in identifying buttons, text, and interactive components
+- **Game State Analysis**: Inconsistent results when trying to locate game elements programmatically
+
+#### **Root Causes**
+- **Visual Complexity**: Balatro's artistic card designs and dynamic animations made detection challenging
+- **Resolution Variability**: Different screen resolutions affected detection accuracy
+- **Real-time Updates**: Game state changes faster than AI processing could keep up
+- **Model Limitations**: The grounding AI model wasn't trained on gaming-specific visual patterns
+
+### **Current Workaround**
+- **Use Gamepad Control**: The primary control method that works reliably
+- **Manual Mouse Control**: Direct mouse interaction through the noVNC interface
+- **Hybrid Approach**: Combining gamepad automation with manual mouse interventions
+
+### **Future Development Plans**
+- **Custom Vision Models**: Training specialized models for Balatro-specific object detection
+- **Computer Vision Pipeline**: Implementing robust image processing and feature extraction
+- **Reinforcement Learning**: Using RL agents trained specifically for mouse control
+- **Alternative AI Models**: Exploring other grounding AI models optimized for gaming
+
+**For now, please use the gamepad controller for automated gameplay. Mouse control will be available in future updates.**
+
 ## 🐳 Docker Environment: Balatro with Enhanced Automation
 
 JokerNet includes a comprehensive Docker setup that containerizes the entire Balatro gaming environment, complete with custom mods, API servers, and remote access capabilities.
@@ -334,8 +411,8 @@ graph LR
     end
 
     A --> F
-    B --> F
-    C --> E
+    A --> G
+    A --> H
     F --> E
     E --> D
     D --> I
@@ -440,8 +517,8 @@ The Model Context Protocol server enables seamless AI agent integration with pow
 ```python
 # Available tools for AI agents
 - press_buttons(sequence): Gamepad control
+- mouse_click(x, y): Mouse interaction (under development)
 - get_screen(): Screenshot capture
-- mouse_click(x, y): Mouse interaction
 - locate_element(description): UI element detection
 ```
 
@@ -616,7 +693,7 @@ The **modular architecture** of JokerNet makes it **easily extensible** to other
 #### **Performance Optimizations**
 - **Edge Computing**: Deploy lightweight models on edge devices for reduced latency
 - **Model Quantization**: Optimize AI models for deployment on resource-constrained devices
-- **Real-time Inference**: Implement model serving optimizations for sub-millisecond response times
+- **Real-time Inference**: *Enhancement* - Implement model serving optimizations for sub-millisecond response times
 - **Distributed Processing**: Scale agent coordination across multiple compute nodes
 
 #### **Enhanced Control Systems**
@@ -685,7 +762,7 @@ The **modular architecture** of JokerNet makes it **easily extensible** to other
 
 #### **Phase 1: Core Expansion (3-6 months)**
 - Multi-game support for 3+ additional titles
-- Performance optimization for real-time gameplay
+- **Real-time performance optimization** for enhanced gameplay automation
 - Enhanced visual analysis capabilities
 
 #### **Phase 2: Advanced Features (6-12 months)**
