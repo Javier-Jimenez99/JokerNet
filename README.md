@@ -508,8 +508,6 @@ I attempted to implement mouse control using AI vision models (HuggingFace ASKUI
 - **Manual Mouse**: Direct interaction through noVNC interface when needed
 - **Future Development**: Custom vision models and computer vision pipelines for mouse control
 
-**For now, please use the gamepad controller for automated gameplay.**
-
 ## 📦 Installation and Setup
 
 ### ⚡ Prerequisites
