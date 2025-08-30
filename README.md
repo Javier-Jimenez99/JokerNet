@@ -543,8 +543,6 @@ sudo chmod 666 /dev/uinput
 
 ### 🚀 Quick Start
 
-<div align="center">
-
 #### 1️⃣ **Clone and Setup**
 ```bash
 git clone https://github.com/Javier-Jimenez99/JokerNet.git
@@ -566,6 +564,8 @@ streamlit run app.py
 ```
 
 #### 4️⃣ **Access Services**
+
+<div align="center">
 | **Service** | **URL** | **Purpose** |
 |:---:|:---:|:---:|
 | 🎮 **Game** | http://localhost:6080 | noVNC interface |
@@ -599,34 +599,6 @@ JokerNet/
 └── 🎭 assets/             # Static resources
 ```
 
-## 🛠️ Development and Monitoring
-
-### 🔍 Debugging
-
-```bash
-# 📊 View service status
-docker exec -it $(docker-compose ps -q) supervisorctl status
-
-# 💻 Access container shell
-docker-compose exec balatro bash
-
-# 📋 Monitor logs
-docker-compose logs -f
-```
-
-### ⚡ Performance Optimization
-
-<div align="center">
-
-| **Optimization** | **Benefit** | **Technology** |
-|:---:|:---:|:---:|
-| 🎮 **GPU Support** | Hardware acceleration | NVIDIA GPU |
-| 💾 **Model Caching** | Faster AI inference | Hugging Face |
-| 📺 **Resolution** | Optimal display | 1920x1080 |
-| ⚡ **Input Simulation** | Low-latency controls | Direct device access |
-
-</div>
-
 ## 🔧 Configuration
 
 ### 🧠 Azure OpenAI Setup
@@ -650,166 +622,61 @@ AZURE_OPENAI_API_VERSION=2024-05-01-preview
 
 **Stake Levels:** 1-8 *(1=easiest, 8=hardest)*
 
-## 🤝 Contributing
-
-This project demonstrates advanced skills in:
-
-<div align="center">
-
-| **Skill Area** | **Technologies** | **Complexity Level** |
-|:---:|:---:|:---:|
-| 🤖 **AI Agent Development** | LangGraph, LangChain | ⭐⭐⭐⭐⭐ |
-| 👁️ **Computer Vision** | OpenCV, PIL | ⭐⭐⭐⭐ |
-| 🌐 **Full-Stack Development** | Streamlit, FastAPI, Docker | ⭐⭐⭐⭐⭐ |
-| 🎮 **Game Integration** | Love2D, Custom Mods | ⭐⭐⭐⭐ |
-| 🏗️ **DevOps** | Docker, Supervisor | ⭐⭐⭐⭐ |
-
-</div>
-
 ## 🚀 Future Work & Extensions
 
-JokerNet represents a **foundational framework** for **AI-powered game automation** that can be extended far beyond Balatro. This section outlines potential enhancements and broader applications that demonstrate the **scalability** and **versatility** of the current architecture.
+JokerNet represents a **versatile platform** for **AI-powered game automation** that can be extended far beyond Balatro, demonstrating the **scalability** of the current architecture.
 
-### 🎮 **Multi-Game Support & Extensions**
+### 🎮 **Multi-Game Support**
 
-The **modular architecture** of JokerNet makes it **easily extensible** to other games, requiring primarily **game-specific adaptations**:
+The **modular architecture** makes JokerNet **easily extensible** to other games with minimal modifications:
 
 #### **Strategy Games**
-- **Civilization VI**: Complex turn-based strategy with resource management and diplomatic AI
-- **Stardew Valley**: Farming simulation with optimization algorithms for crop rotation and relationship management
-- **Factorio**: Factory automation with supply chain optimization and production line balancing
+- **Civilization VI**: Turn-based strategy with resource management and diplomatic AI
+- **Stardew Valley**: Farming simulation with optimization algorithms
+- **Factorio**: Factory automation with supply chain optimization
 
 #### **Action & RPG Games**
-- **Hades**: Roguelike action with combat pattern recognition and optimal pathfinding
-- **Slay the Spire**: Card-based combat with deck optimization and strategic planning
-- **Risk of Rain 2**: Third-person shooter with item optimization and team coordination
+- **Hades**: Roguelike action with combat pattern recognition
+- **Slay the Spire**: Card-based combat with deck optimization
+- **Risk of Rain 2**: Third-person shooter with item optimization
 
 #### **Simulation Games**
-- **The Sims 4**: Life simulation with personality optimization and social dynamics
-- **Cities: Skylines**: City management with traffic optimization and economic balancing
-- **Planet Coaster**: Theme park design with crowd flow analysis and attraction optimization
+- **The Sims 4**: Life simulation with personality optimization
+- **Cities: Skylines**: City management with traffic optimization
+- **Planet Coaster**: Theme park design with crowd flow analysis
 
 ### 🛠️ **Technical Enhancements**
 
 #### **Advanced AI Capabilities**
-- **Reinforcement Learning Integration**: Implement PPO or DQN algorithms for complex decision-making
-- **Multi-Modal Learning**: Combine visual, textual, and audio inputs for richer game understanding
-- **Federated Learning**: Distribute training across multiple machines for improved model performance
-- **Meta-Learning**: Enable agents to learn how to learn, adapting to new games more efficiently
+- **Reinforcement Learning**: PPO/DQN algorithms for complex decision-making
+- **Multi-Modal Learning**: Combine visual, textual, and audio inputs
+- **Meta-Learning**: Enable agents to learn how to learn
 
 #### **Performance Optimizations**
-- **Edge Computing**: Deploy lightweight models on edge devices for reduced latency
-- **Model Quantization**: Optimize AI models for deployment on resource-constrained devices
-- **Real-time Inference**: *Enhancement* - Implement model serving optimizations for sub-millisecond response times
-- **Distributed Processing**: Scale agent coordination across multiple compute nodes
+- **Edge Computing**: Deploy lightweight models on edge devices
+- **Model Quantization**: Optimize for resource-constrained devices
+- **Real-time Inference**: Sub-millisecond response times
 
 #### **Enhanced Control Systems**
-- **Haptic Feedback Integration**: Provide tactile feedback for more immersive control
-- **Voice Control**: Natural language processing for hands-free game interaction
-- **Gesture Recognition**: Computer vision-based gesture control for intuitive input
-- **Brain-Computer Interface**: Direct neural input for ultimate control precision
+- **Voice Control**: Natural language processing for hands-free interaction
+- **Gesture Recognition**: Computer vision-based gesture control
+- **Mouse Control**: Complete implementation of mouse interaction (currently under development)
 
-### 🔧 **Framework Improvements**
-
-#### **Modular Component System**
-- **Plugin Architecture**: Hot-swappable game-specific modules without system restart
-- **Configuration Management**: Dynamic parameter adjustment based on game context
-- **Error Recovery**: Intelligent fallback mechanisms for system resilience
-- **Performance Monitoring**: Real-time metrics and automated optimization
-
-#### **Developer Experience**
-- **SDK Development**: Comprehensive toolkit for third-party game integrations
-- **Documentation Automation**: Auto-generated API docs and integration guides
-- **Testing Framework**: Comprehensive test suites for reliability validation
-- **CI/CD Pipeline**: Automated deployment and continuous integration workflows
-
-### 🌐 **Cross-Platform Compatibility**
-
-#### **Gaming Platforms**
-- **Steam Integration**: Direct Steam API integration for game management
-- **Epic Games Store**: Support for Epic's ecosystem and achievements
-- **Console Support**: Xbox, PlayStation, and Nintendo Switch compatibility
-- **Mobile Gaming**: Android and iOS game automation capabilities
-
-#### **Cloud Gaming Services**
-- **Google Stadia**: Integration with cloud gaming infrastructure
-- **Amazon Luna**: AWS-based gaming platform support
-- **Microsoft xCloud**: Azure cloud gaming compatibility
-- **NVIDIA GeForce Now**: GPU-accelerated cloud gaming optimization
-
-### 📊 **Analytics & Insights**
-
-#### **Performance Analytics**
-- **Gameplay Metrics**: Comprehensive statistics on agent performance and decision quality
-- **Learning Progress**: Visual dashboards tracking AI improvement over time
-- **Comparative Analysis**: Benchmarking against human players and other AI systems
-- **Predictive Modeling**: Forecasting gameplay outcomes and optimal strategies
-
-#### **Research Applications**
-- **Game Theory Research**: Study optimal strategies in complex game environments
-- **AI Safety Testing**: Evaluate AI behavior in controlled gaming scenarios
-- **Human-AI Interaction**: Research collaborative gameplay between humans and AI agents
-- **Educational Tools**: Teaching platforms for AI and machine learning concepts
-
-### 🤝 **Community & Collaboration**
-
-#### **Open-Source Ecosystem**
-- **Community Contributions**: Encourage third-party game integrations and improvements
-- **Plugin Marketplace**: Centralized repository for game-specific modules
-- **Documentation Hub**: Comprehensive guides and tutorials for new developers
-- **Forum Integration**: Community-driven support and knowledge sharing
-
-#### **Industry Partnerships**
-- **Game Developer Collaboration**: Direct partnerships with game studios for native AI integration
-- **Academic Research**: Collaborations with universities for advanced AI research
-- **Esports Integration**: AI coaching and analysis tools for competitive gaming
-- **Accessibility Tools**: AI assistance for players with disabilities
-
-### 🎯 **Roadmap Milestones**
+### � **Roadmap**
 
 #### **Phase 1: Core Expansion (3-6 months)**
 - Multi-game support for 3+ additional titles
-- **Real-time performance optimization** for enhanced gameplay automation
 - Enhanced visual analysis capabilities
+- Mouse control implementation
 
 #### **Phase 2: Advanced Features (6-12 months)**
 - Reinforcement learning integration
 - Cross-platform compatibility
 - Plugin ecosystem development
 
-#### **Phase 3: Enterprise Solutions (12-18 months)**
-- Cloud deployment options
-- Enterprise-grade security and monitoring
-- Commercial API offerings
-
-#### **Phase 4: Research & Innovation (18+ months)**
-- Cutting-edge AI research integration
-- Multi-modal learning capabilities
-- Human-AI collaborative systems
-
-### 💡 **Impact & Applications**
-
-#### **Gaming Industry**
-- **Quality Assurance**: Automated testing and bug detection in game development
-- **Player Assistance**: AI coaching and strategy optimization for players
-- **Content Generation**: Procedural content creation and dynamic difficulty adjustment
-- **Esports Analytics**: Performance analysis and strategic insights for competitive gaming
-
-#### **Education & Research**
-- **AI Education**: Hands-on learning platform for AI and machine learning concepts
-- **Game Studies**: Research platform for understanding game mechanics and player behavior
-- **Human-Computer Interaction**: Study of human-AI collaboration in gaming contexts
-- **Cognitive Science**: Research into decision-making processes and strategic thinking
-
-#### **Commercial Applications**
-- **Game Testing Services**: Automated quality assurance for game development studios
-- **Personalized Gaming**: AI-driven game experiences tailored to individual players
-- **Gaming Analytics**: Business intelligence tools for the gaming industry
-- **Entertainment Automation**: Automated gameplay for streaming and content creation
-
 ---
 
-**The future of JokerNet extends far beyond its current capabilities, representing a **versatile platform** for **AI-driven gaming innovation** that can adapt to virtually any game while pushing the boundaries of what's possible with artificial intelligence in gaming.**
+**JokerNet's modular design enables seamless adaptation to virtually any game while pushing the boundaries of AI-driven gaming innovation.**
 
 ## 📄 License
 
@@ -822,11 +689,6 @@ This project showcases professional-level software engineering with a focus on A
 ## 🎯 Ready to Experience Autonomous Balatro Gameplay?
 
 **Start your AI-powered gaming journey today!** 🚀
-
-```bash
-docker-compose up -d && echo "🎮 Game: http://localhost:6080"
-echo "🌐 Interface: http://localhost:8501"
-echo "📚 API: http://localhost:8000/docs"
 ```
 
 *Built with ❤️ by Javier Jimenez*
