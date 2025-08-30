@@ -1,46 +1,47 @@
+
 -- Auto Start Game Mod - Super Simple with Lovely Logs
 --
--- CONFIGURACIÓN DE OPCIONES DE INICIO:
--- Este mod lee un archivo JSON desde /tmp/balatro_auto_start.json para iniciar una partida
--- con configuración específica. Las opciones disponibles son:
+-- STARTUP OPTION CONFIGURATION:
+-- This mod reads a JSON file from /tmp/balatro_auto_start.json to start a game
+-- with specific configuration. The available options are:
 --
--- OPCIONES PRINCIPALES:
--- • auto_start (boolean): Si es true, inicia automáticamente la partida
+-- MAIN OPTIONS:
+-- • auto_start (boolean): If true, automatically starts the game
 --
--- OPCIONES DE CONFIGURACIÓN DE PARTIDA:
--- • deck (string): El mazo a usar. Valores válidos incluyen:
---   - "b_red"      - Mazo Rojo (predeterminado)
---   - "b_blue"     - Mazo Azul  
---   - "b_yellow"   - Mazo Amarillo
---   - "b_green"    - Mazo Verde
---   - "b_black"    - Mazo Negro
---   - "b_magic"    - Mazo Mágico
---   - "b_nebula"   - Mazo Nebulosa
---   - "b_ghost"    - Mazo Fantasma
---   - "b_abandoned"- Mazo Abandonado
---   - "b_checkered"- Mazo A Cuadros
---   - "b_zodiac"   - Mazo Zodíaco
---   - "b_painted"  - Mazo Pintado
---   - "b_anaglyph" - Mazo Anaglifo
---   - "b_plasma"   - Mazo Plasma
---   - "b_erratic"  - Mazo Errático
---   (Nota: Solo funcionarán mazos desbloqueados)
+-- GAME CONFIGURATION OPTIONS:
+-- • deck (string): The deck to use. Valid values include:
+--   - "b_red"      - Red Deck (default)
+--   - "b_blue"     - Blue Deck
+--   - "b_yellow"   - Yellow Deck
+--   - "b_green"    - Green Deck
+--   - "b_black"    - Black Deck
+--   - "b_magic"    - Magic Deck
+--   - "b_nebula"   - Nebula Deck
+--   - "b_ghost"    - Ghost Deck
+--   - "b_abandoned"- Abandoned Deck
+--   - "b_checkered"- Checkered Deck
+--   - "b_zodiac"   - Zodiac Deck
+--   - "b_painted"  - Painted Deck
+--   - "b_anaglyph" - Anaglyph Deck
+--   - "b_plasma"   - Plasma Deck
+--   - "b_erratic"  - Erratic Deck
+--   (Note: Only unlocked decks will work)
 --
--- • stake (number): El nivel de dificultad/apuesta. Valores válidos:
---   - 1 = Apuesta Blanca (más fácil)
---   - 2 = Apuesta Roja
---   - 3 = Apuesta Verde  
---   - 4 = Apuesta Negra
---   - 5 = Apuesta Azul
---   - 6 = Apuesta Púrpura
---   - 7 = Apuesta Naranja
---   - 8 = Apuesta Dorada (más difícil)
---   (Nota: Solo funcionarán apuestas desbloqueadas)
+-- • stake (number): The difficulty/stake level. Valid values:
+--   - 1 = White Stake (easiest)
+--   - 2 = Red Stake
+--   - 3 = Green Stake
+--   - 4 = Black Stake
+--   - 5 = Blue Stake
+--   - 6 = Purple Stake
+--   - 7 = Orange Stake
+--   - 8 = Gold Stake (hardest)
+--   (Note: Only unlocked stakes will work)
 --
--- • seed (string): Semilla para generar la partida de forma determinística
---   - Cualquier texto funciona como semilla
---   - "random" o null/undefined = semilla aleatoria
---   - Usar la misma semilla producirá la misma secuencia de cartas/eventos
+-- • seed (string): Seed to generate the game deterministically
+--   - Any text works as a seed
+--   - "random" or null/undefined = random seed
+--   - Using the same seed will produce the same sequence of cards/events
 
 -- Parse JSON and extract config
 local function read_config()

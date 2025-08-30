@@ -1,7 +1,8 @@
+
 """
 Balatro Remote Desktop - Streamlit Application
 
-Aplicación principal simplificada con UI reorganizada.
+Main application with reorganized UI.
 """
 
 import streamlit as st
@@ -18,24 +19,24 @@ from ui_components import (
 
 
 def main():
-    """Función principal de la aplicación."""
-    # Configuración de la página
-    st.set_page_config(layout="wide", page_title="Balatro - Escritorio Remoto")
-    
-    # Inicializar estado de la sesión
+    """Main application function."""
+    # Page configuration
+    st.set_page_config(layout="wide", page_title="Balatro - Remote Desktop")
+
+    # Initialize session state
     init_session_state()
-    
-    # Instanciar el cliente API
+
+    # Instantiate API client
     api_client = APIClient()
 
-    # Título principal
-    st.title("🃏 Balatro - Escritorio Remoto")
+    # Main title
+    st.title("🃏 Balatro - Remote Desktop")
 
-    # Iniciar juego si no está iniciado
+    # Start game if not started
     if not st.session_state.game_started:
-        with st.spinner("Iniciando Balatro…", show_time=True):
+        with st.spinner("Starting Balatro…", show_time=True):
             resp = api_client.restart_balatro(
-                deck=st.session_state.deck, 
+                deck=st.session_state.deck,
                 stake=st.session_state.stake,
                 controller_type=st.session_state.mcp_type
             )
@@ -44,22 +45,21 @@ def main():
         if resp.get("status") == "success":
             st.session_state["game_started"] = True
         else:
-            st.error("Error al iniciar la run. Revisa los logs del servidor.")
+            st.error("Error starting the run. Check the server logs.")
 
     render_agent_config()
     render_run_config(api_client)
 
-    # Layout principal en dos columnas
+    # Main layout in two columns
     left_column, right_column = st.columns(2)
-    
-    with left_column:   
-        # Interfaz de control (Chat + Gamepad)
+
+    with left_column:
+        # Control interface (Chat + Gamepad)
         render_chat(api_client)
 
     with right_column:
-        # Visor VNC
+        # VNC viewer
         render_vnc_viewer()
-
 
 if __name__ == "__main__":
     main()

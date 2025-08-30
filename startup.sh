@@ -1,41 +1,43 @@
 #!/bin/bash
 
-# Script para iniciar JokerNet con detección automática de GPU
-echo "🃏 Iniciando JokerNet..."
 
-# Detectar si hay GPU NVIDIA disponible
+# Script to start JokerNet with automatic GPU detection
+echo "🃏 Starting JokerNet..."
+
+# Detect if an NVIDIA GPU is available
 if command -v nvidia-smi &> /dev/null && nvidia-smi &> /dev/null; then
     export NVIDIA_VISIBLE_DEVICES=all
     export NVIDIA_DRIVER_CAPABILITIES=compute,utility
     export GPU_DEVICES='[{"driver": "nvidia", "count": "all", "capabilities": ["gpu"]}]'
-    echo "🎮 GPU NVIDIA detectada - Habilitando aceleración GPU"
+    echo "🎮 NVIDIA GPU detected - Enabling GPU acceleration"
 else
     export NVIDIA_VISIBLE_DEVICES=""
     export NVIDIA_DRIVER_CAPABILITIES=""
     export GPU_DEVICES="[]"
-    echo "💻 No se detectó GPU NVIDIA - Usando CPU"
+    echo "💻 No NVIDIA GPU detected - Using CPU"
 fi
 
-# Cargar módulo uinput
+# Load uinput module
 sudo modprobe uinput
 sudo chmod 666 /dev/uinput
 
-# Levantar Docker
+# Start Docker
 cd BalatroDocker
 
-# Usar profile apropiado según GPU
+# Use appropriate profile depending on GPU
 if [[ "${NVIDIA_VISIBLE_DEVICES}" == "all" ]]; then
-    echo "🚀 Iniciando con soporte GPU..."
+    echo "🚀 Starting with GPU support..."
     docker compose --profile gpu up balatro-gpu --build -d
 else
-    echo "🚀 Iniciando en modo CPU..."
+    echo "🚀 Starting in CPU mode..."
     docker compose up balatro --build -d
 fi
 
+
 cd ..
 
-# Esperar 10 segundos para que Docker se levante
+# Wait 10 seconds for Docker to start
 sleep 10
 
-# Ejecutar Streamlit (los logs aparecerán aquí)
+# Run Streamlit (logs will appear here)
 uv run streamlit run src/app.py --server.port 8501
