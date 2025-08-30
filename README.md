@@ -22,11 +22,8 @@ Built with **state-of-the-art AI frameworks** like **LangChain** and **LangGraph
 - [🏗️ System Architecture](#️-system-architecture)
 - [🤖 Multiagent System with LangGraph](#-multiagent-system-with-langgraph)
 - [🌐 Streamlit Web Interface](#-streamlit-web-interface)
+- [🐳 Docker Environment: Balatro with Enhanced Automation](#-docker-environment-balatro-with-enhanced-automation)
 - [⚠️ Mouse Controller Status](#️-mouse-controller-status)
-- [🐳 Docker Environment: Balatro with Enhanced Automation](#-docker-environment-balatro-with-enhanced-automation)
-- [🤖 Multiagent System with LangGraph](#-multiagent-system-with-langgraph)
-- [🌐 Streamlit Web Interface](#-streamlit-web-interface)
-- [🐳 Docker Environment: Balatro with Enhanced Automation](#-docker-environment-balatro-with-enhanced-automation)
 - [📦 Installation and Setup](#-installation-and-setup)
 - [📁 Project Structure](#-project-structure)
 - [🛠️ Development and Monitoring](#️-development-and-monitoring)
@@ -121,23 +118,6 @@ The multiagent architecture features three specialized agents, each with distinc
 | ⚙️ **Worker Agent** | Execution Expert | Action implementation | Gamepad control (primary), mouse interaction (under development) |
 
 </div>
-
-### 🔄 LangGraph Workflow Structure
-
-The system leverages LangGraph's state graph approach to manage complex agent interactions and decision flows:
-
-```python
-# Core state management from the implementation
-class AgentState(TypedDict):
-    input: list[BaseMessage]
-    game_states: list[str]
-    worker_responses: list[str]
-    last_screenshot: str
-    worker_step: int
-    planner_step: int
-    subtasks: list[PlannerResponse]
-    output: AIMessage
-```
 
 ### 📊 Visual Workflow Diagram
 
@@ -344,47 +324,6 @@ screenshots/
 
 *For the underlying Docker environment powering this interface, see [Docker Environment](#-docker-environment-balatro-with-enhanced-automation)*
 
-## ⚠️ **Important Notice: Mouse Controller Status**
-
-### **Mouse Control - Under Development**
-
-**⚠️ WARNING: The mouse controller is currently under development and does not work yet.**
-
-While the system supports both gamepad and mouse control modes, the mouse control functionality is not operational at this time. The gamepad controller works reliably, but mouse-based interaction requires additional development.
-
-### **Technical Challenges & Attempts**
-
-I attempted to implement mouse control using advanced AI techniques:
-
-#### **Grounding AI Approach**
-- **Model Used**: HuggingFace `ASKUI/PTA-1` (Pointing and Text Recognition AI)
-- **Purpose**: Grounding AI for object detection and UI element recognition
-- **Expected Outcome**: Automatic detection of cards, buttons, and interactive elements in Balatro
-
-#### **Implementation Challenges**
-- **Card Detection Failure**: The `ASKUI/PTA-1` model was unable to reliably detect Balatro's playing cards
-- **UI Element Recognition**: Difficulty in identifying buttons, text, and interactive components
-- **Game State Analysis**: Inconsistent results when trying to locate game elements programmatically
-
-#### **Root Causes**
-- **Visual Complexity**: Balatro's artistic card designs and dynamic animations made detection challenging
-- **Resolution Variability**: Different screen resolutions affected detection accuracy
-- **Real-time Updates**: Game state changes faster than AI processing could keep up
-- **Model Limitations**: The grounding AI model wasn't trained on gaming-specific visual patterns
-
-### **Current Workaround**
-- **Use Gamepad Control**: The primary control method that works reliably
-- **Manual Mouse Control**: Direct mouse interaction through the noVNC interface
-- **Hybrid Approach**: Combining gamepad automation with manual mouse interventions
-
-### **Future Development Plans**
-- **Custom Vision Models**: Training specialized models for Balatro-specific object detection
-- **Computer Vision Pipeline**: Implementing robust image processing and feature extraction
-- **Reinforcement Learning**: Using RL agents trained specifically for mouse control
-- **Alternative AI Models**: Exploring other grounding AI models optimized for gaming
-
-**For now, please use the gamepad controller for automated gameplay. Mouse control will be available in future updates.**
-
 ## 🐳 Docker Environment: Balatro with Enhanced Automation
 
 JokerNet includes a comprehensive Docker setup that containerizes the entire Balatro gaming environment, complete with custom mods, API servers, and remote access capabilities.
@@ -523,6 +462,47 @@ The Model Context Protocol server enables seamless AI agent integration with pow
 ```
 
 *For setup instructions, see [Installation Guide](#-installation-and-setup)*
+
+## ⚠️ **Important Notice: Mouse Controller Status**
+
+### **Mouse Control - Under Development**
+
+**⚠️ WARNING: The mouse controller is currently under development and does not work yet.**
+
+While the system supports both gamepad and mouse control modes, the mouse control functionality is not operational at this time. The gamepad controller works reliably, but mouse-based interaction requires additional development.
+
+### **Technical Challenges & Attempts**
+
+I attempted to implement mouse control using advanced AI techniques:
+
+#### **Grounding AI Approach**
+- **Model Used**: HuggingFace `ASKUI/PTA-1` (Pointing and Text Recognition AI)
+- **Purpose**: Grounding AI for object detection and UI element recognition
+- **Expected Outcome**: Automatic detection of cards, buttons, and interactive elements in Balatro
+
+#### **Implementation Challenges**
+- **Card Detection Failure**: The `ASKUI/PTA-1` model was unable to reliably detect Balatro's playing cards
+- **UI Element Recognition**: Difficulty in identifying buttons, text, and interactive components
+- **Game State Analysis**: Inconsistent results when trying to locate game elements programmatically
+
+#### **Root Causes**
+- **Visual Complexity**: Balatro's artistic card designs and dynamic animations made detection challenging
+- **Resolution Variability**: Different screen resolutions affected detection accuracy
+- **Real-time Updates**: Game state changes faster than AI processing could keep up
+- **Model Limitations**: The grounding AI model wasn't trained on gaming-specific visual patterns
+
+### **Current Workaround**
+- **Use Gamepad Control**: The primary control method that works reliably
+- **Manual Mouse Control**: Direct mouse interaction through the noVNC interface
+- **Hybrid Approach**: Combining gamepad automation with manual mouse interventions
+
+### **Future Development Plans**
+- **Custom Vision Models**: Training specialized models for Balatro-specific object detection
+- **Computer Vision Pipeline**: Implementing robust image processing and feature extraction
+- **Reinforcement Learning**: Using RL agents trained specifically for mouse control
+- **Alternative AI Models**: Exploring other grounding AI models optimized for gaming
+
+**For now, please use the gamepad controller for automated gameplay. Mouse control will be available in future updates.**
 
 ## 📦 Installation and Setup
 
