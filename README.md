@@ -8,11 +8,9 @@
 
 > **Transform your Balatro gameplay with## 🚀 Future Work & Extensions
 
-*Note: Many features described below represent potential enhancements and extensions to the current system, not existing capabilities.*
+JokerNet represents a **foundational framework** for **AI-powered game automation** that can be extended far beyond Balatro. This section outlines potential enhancements and broader applications that demonstrate the **scalability** and **versatility** of the current multiagent architecture. 🤖✨
 
-JokerNet represents a **foundational framework** for **AI-powered game automation** that can be extended far beyond Balatro. This section outlines potential enhancements and broader applications that demonstrate the **scalability** and **versatility** of the current architecture.tting-edge AI automation** 🤖✨
-
-The system integrates **Azure OpenAI** for intelligent reasoning, **Docker** for scalable deployment, and **custom mods** for enhanced game interaction, making it a comprehensive solution for **automated gaming** and beyond.
+The system integrates **Azure OpenAI** for intelligent reasoning, **Docker** for scalable deployment, and **custom mods** for enhanced game interaction, making it a comprehensive solution for **automated gaming**.
 
 Built with **state-of-the-art AI frameworks** like **LangChain** and **LangGraph**, this project exemplifies expertise in **AI agent orchestration**, **full-stack development**, and **containerized gaming environments**. As a software engineer specializing in **AI and automation**, I've crafted JokerNet to demonstrate innovative approaches to game AI - from sophisticated **multiagent** coordination to real-time visual analysis and precise control simulation.
 
@@ -66,7 +64,7 @@ graph TB
         C[Multiagent System<br/>LangGraph]
     end
 
-    subgraph "🐳 Docker Container<br/>Game Environment"
+    subgraph "🐳 Docker Container<br/>Complete Game Environment"
         subgraph "API Services"
             F[REST API<br/>Port 8000]
             G[MCP Server<br/>Port 8001]
@@ -94,6 +92,7 @@ graph TB
     A --> F
     A --> B
     A --> C
+    C --> A
     C --> G
 
     style A fill:#e1f5fe
@@ -110,13 +109,7 @@ graph TB
 - **⚡ Performance**: Optimized for responsive game automation and AI processing
 - **🔗 Dual Control Paths**: Both REST API and MCP server provide game control capabilities
 - **🔄 Game Agnostic Design**: With minimal modifications, the same Docker environment can support different games by swapping the game engine and mods
-
-**🐳 Docker Container Benefits:**
-- **🎮 Complete Game Environment**: Everything needed to run and interact with the game is encapsulated in a single container
-- **🔧 Easy Deployment**: One-command deployment with all dependencies and services pre-configured
-- **🔄 Game Swapping**: Simple replacement of game files and mods enables support for different games
-- **📦 Portability**: Consistent environment across different host systems
-- **🛠️ Isolation**: Clean separation between host system and game environment
+- **🔗 Bidirectional Communication**: Multiagent system communicates directly with both Streamlit interface and MCP server for seamless coordination
 
 *For detailed agent orchestration, see [Multiagent System](#-multiagent-system-with-langgraph)*
 
@@ -349,37 +342,52 @@ JokerNet includes a comprehensive Docker setup that containerizes the entire Bal
 
 ### 🏛️ Container Architecture
 
-The Docker environment provides a fully isolated and optimized gaming ecosystem:
+The Docker environment provides a fully isolated and optimized gaming ecosystem with all services running within a single container:
 
 ```mermaid
-graph LR
-    subgraph "External Access"
-        A[Streamlit<br/>Port 8501]
-        B[noVNC<br/>Port 6080]
-        C[VNC<br/>Port 5900]
+graph TB
+    subgraph "🐳 Docker Container<br/>Internal Architecture"
+        subgraph "API Services"
+            F[REST API<br/>Port 8000]
+            G[MCP Server<br/>Port 8001]
+        end
+
+        subgraph "Game Runtime"
+            B[noVNC<br/>Port 6080]
+            D[Balatro Game<br/>Love2D Engine]
+            E[Custom Mods<br/>BalatroLogger]
+        end
+
+        subgraph "Display System"
+            H[Xvfb<br/>Virtual Display]
+            I[x11vnc<br/>VNC Server]
+        end
+
+        B --> I
+        I --> H
+        H --> D
+        F --> D
+        G --> D
+        E --> D
     end
 
-    subgraph "Container Services"
-        D[Xvfb<br/>Virtual Display]
-        E[x11vnc<br/>VNC Server]
-        F[noVNC<br/>Web Proxy]
-        G[FastAPI<br/>Port 8000]
-        H[MCP Server<br/>Port 8001]
-        I[Balatro<br/>Love2D Engine]
-    end
-
-    A --> F
-    A --> G
-    A --> H
-    F --> E
-    E --> D
-    D --> I
-    G --> I
-    H --> I
-
-    style I fill:#e8f5e8
-    style D fill:#fff3e0
+    style D fill:#e8f5e8
+    style F fill:#fff3e0
 ```
+
+**🔧 Internal Service Flow:**
+- **🌐 External Access**: noVNC (Port 6080) provides web-based game interface, while VNC (Port 5900) offers native client access
+- **🚀 API Layer**: REST API (Port 8000) handles HTTP requests, MCP Server (Port 8001) manages AI agent integration
+- **🎮 Game Control**: Both API services communicate directly with the Balatro game engine for programmatic control
+- **🖥️ Display Pipeline**: Xvfb creates virtual display → x11vnc serves VNC → noVNC provides web proxy
+- **🔧 Mod Integration**: Custom mods enhance game functionality and enable automation features
+
+**🐳 Docker Container Benefits:**
+- **🎮 Complete Game Environment**: Everything needed to run and interact with the game is encapsulated in a single container
+- **🔧 Easy Deployment**: One-command deployment with all dependencies and services pre-configured
+- **🔄 Game Swapping**: Simple replacement of game files and mods enables support for different games
+- **📦 Portability**: Consistent environment across different host systems
+- **🛠️ Isolation**: Clean separation between host system and game environment
 
 ### 🔧 Services Overview
 
@@ -389,11 +397,11 @@ All services are expertly managed by Supervisor for reliable, production-grade o
 
 | **Service** | **Port** | **Purpose** | **Technology** |
 |:---:|:---:|:---:|:---:|
-| 🖥️ **Xvfb** | N/A | Virtual X server | X11 |
-| 📡 **x11vnc** | 5900 | VNC server | VNC Protocol |
-| 🌐 **noVNC** | 6080 | WebSocket proxy | WebRTC |
-| 🚀 **FastAPI** | 8000 | REST API server | Python/FastAPI |
-| 🤖 **MCP Server** | 8001 | AI integration | Python/MCP |
+| 🖥️ **Xvfb** | N/A | Virtual X server for headless display | X11 |
+| 📡 **x11vnc** | 5900 | VNC server for remote desktop access | VNC Protocol |
+| 🌐 **noVNC** | 6080 | Web-based VNC client (no installation needed) | WebRTC |
+| 🚀 **FastAPI** | 8000 | REST API server for game control | Python/FastAPI |
+| 🤖 **MCP Server** | 8001 | AI agent integration and tool orchestration | Python/MCP |
 
 </div>
 
