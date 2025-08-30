@@ -62,29 +62,39 @@ graph TB
         A[Streamlit Interface<br/>Port 8501]
     end
 
-    subgraph "Orchestration Layer"
-        B[Docker Container<br/>noVNC 6080]
+    subgraph "AI Orchestration Layer"
         C[Multiagent System<br/>LangGraph]
     end
 
-    subgraph "Game Integration Layer"
-        D[Balatro Game<br/>Love2D Engine]
-        E[Custom Mods<br/>BalatroLogger]
-    end
+    subgraph "🐳 Docker Container<br/>Game Environment"
+        subgraph "API Services"
+            F[REST API<br/>Port 8000]
+            G[MCP Server<br/>Port 8001]
+        end
 
-    subgraph "API Layer"
-        F[REST API<br/>Port 8000]
-        G[MCP Server<br/>Port 8001]
+        subgraph "Game Runtime"
+            B[noVNC<br/>Port 6080]
+            D[Balatro Game<br/>Love2D Engine]
+            E[Custom Mods<br/>BalatroLogger]
+        end
+
+        subgraph "Display System"
+            H[Xvfb<br/>Virtual Display]
+            I[x11vnc<br/>VNC Server]
+        end
+
+        B --> I
+        I --> H
+        H --> D
+        F --> D
+        G --> D
+        E --> D
     end
 
     A --> F
     A --> B
     A --> C
     C --> G
-    F --> D
-    G --> D
-    B --> D
-    E --> D
 
     style A fill:#e1f5fe
     style C fill:#f3e5f5
@@ -93,11 +103,20 @@ graph TB
 ```
 
 **Architecture Highlights:**
-- **🔄 Multi-layered Design**: Clear separation of concerns across UI, orchestration, integration, and API layers
+- **🔄 Multi-layered Design**: Clear separation between external UI, AI orchestration, and containerized game environment
+- **🐳 Docker Encapsulation**: All game execution components (display, APIs, game engine, mods) are contained within a single Docker image for easy deployment and portability
 - **📡 Service Mesh**: Streamlit interfaces with API, VNC, and multiagent system independently
 - **🛡️ Fault Tolerance**: Isolated components with graceful error handling
 - **⚡ Performance**: Optimized for responsive game automation and AI processing
 - **🔗 Dual Control Paths**: Both REST API and MCP server provide game control capabilities
+- **🔄 Game Agnostic Design**: With minimal modifications, the same Docker environment can support different games by swapping the game engine and mods
+
+**🐳 Docker Container Benefits:**
+- **🎮 Complete Game Environment**: Everything needed to run and interact with the game is encapsulated in a single container
+- **🔧 Easy Deployment**: One-command deployment with all dependencies and services pre-configured
+- **🔄 Game Swapping**: Simple replacement of game files and mods enables support for different games
+- **📦 Portability**: Consistent environment across different host systems
+- **🛠️ Isolation**: Clean separation between host system and game environment
 
 *For detailed agent orchestration, see [Multiagent System](#-multiagent-system-with-langgraph)*
 
@@ -639,7 +658,7 @@ This project demonstrates advanced skills in:
 
 </div>
 
-## � Future Work & Extensions
+## 🚀 Future Work & Extensions
 
 JokerNet represents a **foundational framework** for **AI-powered game automation** that can be extended far beyond Balatro. This section outlines potential enhancements and broader applications that demonstrate the **scalability** and **versatility** of the current architecture.
 
@@ -784,7 +803,7 @@ The **modular architecture** of JokerNet makes it **easily extensible** to other
 
 **The future of JokerNet extends far beyond its current capabilities, representing a **versatile platform** for **AI-driven gaming innovation** that can adapt to virtually any game while pushing the boundaries of what's possible with artificial intelligence in gaming.**
 
-## �📄 License
+## 📄 License
 
 This project showcases professional-level software engineering with a focus on AI-driven automation, game development integration, and scalable system design.
 
