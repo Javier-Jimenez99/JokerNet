@@ -551,6 +551,10 @@ streamlit run app.py
 
 </div>
 
+### 🚀 Uso del Script de Inicio
+
+Ejecuta `./startup.sh` para iniciar en modo CPU. Usa `./startup.sh --gpu` para activar GPU si está disponible.
+
 ## 📁 Project Structure
 
 ```
