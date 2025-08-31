@@ -26,9 +26,8 @@ Built with **state-of-the-art AI frameworks** like **LangChain** and **LangGraph
 - [⚠️ Mouse Controller Status](#️-mouse-controller-status)
 - [📦 Installation and Setup](#-installation-and-setup)
 - [📁 Project Structure](#-project-structure)
-- [🛠️ Development and Monitoring](#️-development-and-monitoring)
 - [🔧 Configuration](#-configuration)
-- [🤝 Contributing](#-contributing)
+- [🚀 Future Work & Extensions](#-future-work--extensions)
 - [📄 License](#-license)
 
 ## 🚀 Key Features
