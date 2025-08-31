@@ -6,7 +6,7 @@
 [![Azure OpenAI](https://img.shields.io/badge/Azure-OpenAI-purple.svg)](https://azure.microsoft.com/en-us/products/ai-services/openai-service/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-> **Transform your Balatro gameplay with Jonernet
+> **Transform your Balatro gameplay with Jonernet**
 
 JokerNet represents a **foundational framework** for **AI-powered game automation** that can be extended far beyond Balatro. This section outlines potential enhancements and broader applications that demonstrate the **scalability** and **versatility** of the current multiagent architecture. 🤖✨
 
@@ -204,137 +204,24 @@ JokerNet features a modern, responsive Streamlit application that provides an in
 
 <div align="center">
 
-#### 🏠 **Main Dashboard Screenshot**
-![Main Dashboard Screenshot](screenshots/main_dashboard.png)
-*📍 **File:** `screenshots/main_dashboard.png`*
+#### 🏠 **Main Dashboard**
+![Main Dashboard Screenshot](assets/main_dashboard.png)
+---
 
-**What to Capture:**
-- Full browser window showing the complete Streamlit interface
-- Show the embedded noVNC game viewer (left side) displaying Balatro gameplay
-- Include the chat interface (right side) with an example conversation
-- Display configuration panels with deck selection and stake settings
-- Show agent status indicators and current game state information
-- Capture the overall layout demonstrating the three-panel design
-
-**Key Elements to Include:**
-- ✅ Game view with Balatro running
-- ✅ Chat input/output area
-- ✅ Configuration sidebar
-- ✅ Status indicators
-- ✅ Clean, professional layout
+#### ⚙️ **Agent Configuration**
+![Agent Configuration Screenshot](assets/agent_config.png)
 
 ---
 
-#### ⚙️ **Agent Configuration Screenshot**
-![Agent Configuration Screenshot](screenshots/agent_config.png)
-*📍 **File:** `screenshots/agent_config.png`*
-
-**What to Capture:**
-- Focus on the configuration panel/sidebar
-- Show control method selection (Gamepad vs Mouse - mouse under development)
-- Display AI model settings and parameters
-- Include deck selection dropdown with available options
-- Show stake level selector
-- Display any advanced configuration options
-- Capture parameter validation or help text
-
-**Key Elements to Include:**
-- ✅ Control method toggle (Gamepad/Mouse - mouse under development)
-- ✅ AI model selection
-- ✅ Deck and stake configuration
-- ✅ Parameter settings
-- ✅ Configuration validation
+#### 🃏 **Game Configuration**
+![Game Configuration Screenshot](assets/game_config.png)
 
 ---
 
-#### 🎮 **Game Control Panel Screenshot**
-![Game Control Screenshot](screenshots/game_control.png)
-*📍 **File:** `screenshots/game_control.png`*
-
-**What to Capture:**
-- Show game state monitoring and agent activity
-- Display agent action history or current activity
-- Include manual override controls if available
-- Show progress indicators or completion status
-- Capture any debugging information or logs
-- Display performance metrics (response time, success rate)
-
-**Key Elements to Include:**
-- ✅ Game state display
-- ✅ Agent action log/monitoring
-- ✅ Manual control options
-- ✅ Performance metrics
-- ✅ Status indicators
-
----
-
-#### 💬 **Chat Interface Screenshot**
-![Chat Interface Screenshot](screenshots/chat_interface.png)
-*📍 **File:** `screenshots/chat_interface.png`*
-
-**What to Capture:**
-- Focus on the natural language chat interface
-- Show an example conversation with the AI agent
-- Display different types of user inputs and AI responses
-- Include conversation history
-- Show typing indicators or processing status
-- Capture error handling or clarification requests
-
-**Key Elements to Include:**
-- ✅ Sample conversation
-- ✅ Different message types
-- ✅ Conversation history
-- ✅ Processing indicators
-- ✅ Error handling examples
-
----
-
-#### 🎯 **Game Automation in Action**
-![Game Automation Demo](screenshots/game_automation_demo.png)
-*📍 **File:** `screenshots/game_automation_demo.png`*
-
-**What to Capture:**
-- Show the system actively playing Balatro
-- Display decision making and visual feedback of agent actions
-- Show game state analysis overlays (optional)
-- Capture successful card plays or strategic decisions
-- Display the coordination between agents
-
-**Key Elements to Include:**
-- ✅ Active gameplay automation
-- ✅ Decision display
-- ✅ Agent coordination
-- ✅ Game state analysis
-- ✅ Successful actions
+#### 🎮 **Game Control Panel**
+![Game Control Screenshot](assets/game_control.png)
 
 </div>
-
-**📋 Screenshot Guidelines:**
-- **Resolution:** 1920x1080 or higher for crisp display
-- **Format:** PNG for best quality
-- **Browser:** Chrome/Firefox with full window capture
-- **Timing:** Capture during active use, not loading states
-- **Privacy:** Ensure no sensitive information is visible
-- **Consistency:** Use similar browser settings and zoom levels
-
-### 📁 Screenshot Directory Setup
-
-Create the screenshots directory and organize your images:
-
-```bash
-# Create screenshots directory
-mkdir -p screenshots
-
-# Recommended file naming (already configured in README)
-screenshots/
-├── main_dashboard.png          # Main interface overview
-├── agent_config.png           # Configuration settings
-├── game_control.png           # Monitoring and controls
-├── chat_interface.png         # Chat interaction examples
-└── game_automation_demo.png   # Live automation demonstration
-```
-
-*For the underlying Docker environment powering this interface, see [Docker Environment](#-docker-environment-balatro-with-enhanced-automation)*
 
 ## 🐳 Docker Environment: Balatro with Enhanced Automation
 

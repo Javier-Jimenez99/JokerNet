@@ -32,8 +32,12 @@ services:
       - SYS_RAWIO
     restart: unless-stopped
 
-  # Servicio con GPU NVIDIA - solo se activa con profile 'gpu'
   balatro-gpu:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        INSTALL_CUDA: true
     extends: balatro
     deploy:
       resources:
