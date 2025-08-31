@@ -414,7 +414,7 @@ sudo chmod 666 /dev/uinput
 git clone https://github.com/Javier-Jimenez99/JokerNet.git
 cd JokerNet
 uv sync  # Install dependencies
-cp .env.example .env  # Configure Azure OpenAI
+cp .env.example .env  # Configure environment variables
 ```
 
 #### 2️⃣ **Launch Docker Environment**
@@ -432,6 +432,7 @@ streamlit run app.py
 #### 4️⃣ **Access Services**
 
 <div align="center">
+
 | **Service** | **URL** | **Purpose** |
 |:---:|:---:|:---:|
 | 🎮 **Game** | http://localhost:6080 | noVNC interface |
@@ -473,11 +474,24 @@ JokerNet/
 
 ### 🧠 Azure OpenAI Setup
 
-Configure your [`.env`](.env ) file:
+Configure your [`.env`](.env ) from [`.env.example`](.env.example) file:
 ```env
-AZURE_OPENAI_ENDPOINT=your_endpoint
-AZURE_OPENAI_API_KEY=your_key
-AZURE_OPENAI_API_VERSION=2024-05-01-preview
+# Azure OpenAI Configuration (required for AI agent)
+AZURE_OPENAI_ENDPOINT=https://your-azure-endpoint.openai.azure.com/
+AZURE_OPENAI_API_KEY=your_api_key_here
+AZURE_OPENAI_MODEL=gpt-4.1
+AZURE_OPENAI_API_VERSION=2025-01-01-preview
+
+# LangSmith Configuration
+LANGCHAIN_TRACING_V2=true
+LANGCHAIN_PROJECT=BalatroAgent-Worker
+LANGCHAIN_API_KEY=your_langchain_api_key_here
+
+# Docker/Steam Configuration
+STEAM_USER=your_steam_username
+STEAM_PASS=your_steam_password
+GAME_SPEED=16
+
 ```
 
 ### 🎮 Game Parameters
@@ -518,11 +532,11 @@ This project showcases professional-level software engineering with a focus on A
 ## 🎯 Ready to Experience Autonomous Balatro Gameplay?
 
 **Start your AI-powered gaming journey today!** 🚀
-```
+
 
 *Built with ❤️ by Javier Jimenez*
 
 [![GitHub](https://img.shields.io/badge/GitHub-Profile-black.svg)](https://github.com/Javier-Jimenez99)
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-blue.svg)](https://linkedin.com/in/javier-jimenez99)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-blue.svg)](https://www.linkedin.com/in/javier-jimenez-jara/)
 
 </div>
