@@ -1,0 +1,108 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "jokernet"
+version = "0.1.0"
+description = "JokerNet: AI-powered Balatro automation with Streamlit interface"
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [
+    {name = "Javier Jimenez", email = "javier@example.com"},
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+
+dependencies = [
+    # Core web framework
+    "streamlit>=1.48.0",
+    # LangChain ecosystem (AI core)
+    "langchain-openai>=0.3.0",
+    "langchain-core>=0.3.0",
+    "langgraph>=0.6.0",
+    "langchain-mcp-adapters>=0.1.0",
+    # HTTP clients and API
+    "requests>=2.32.0",
+    "fastapi>=0.116.0",
+    "uvicorn>=0.35.0",
+    # Data processing
+    "pydantic>=2.9.0",
+    # Environment and configuration
+    "python-dotenv>=1.1.0",
+    # System utilities (for automation)
+    "pyautogui>=0.9.54",
+    "pillow>=11.3.0",
+    # MCP (Model Context Protocol)
+    "fastmcp>=2.0.0",
+    "ipykernel>=6.30.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.24.0",
+    "black>=24.0.0",
+    "isort>=5.13.0",
+    "flake8>=7.0.0",
+    "mypy>=1.8.0",
+]
+
+docker = [
+    # Additional dependencies for Docker environment
+    "psutil>=7.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/Javier-Jimenez99/JokerNet"
+Repository = "https://github.com/Javier-Jimenez99/JokerNet"
+
+[project.scripts]
+jokernet = "src.app:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src"]
+
+[tool.uv]
+dev-dependencies = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.24.0", 
+    "black>=24.0.0",
+    "isort>=5.13.0",
+    "ruff>=0.12.0",
+]
+
+[tool.black]
+line-length = 88
+target-version = ['py311']
+
+[tool.isort]
+profile = "black"
+line_length = 88
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+select = ["E", "F", "I", "N", "W"]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+
+[[tool.mypy.overrides]]
+module = [
+    "streamlit.*",
+    "qwen_agent.*",
+    "langchain_mcp_adapters.*",
+    "fastmcp.*",
+]
+ignore_missing_imports = true

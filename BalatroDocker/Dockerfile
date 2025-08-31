@@ -58,10 +58,13 @@ RUN apt-get update && apt-get install -y \
     nginx \
     && rm -rf /var/lib/apt/lists/*
 
-# Try to install CUDA runtime (optional)
-RUN apt-get update && \
+# Try to install CUDA runtime (optional, only if INSTALL_CUDA is true)
+ARG INSTALL_CUDA=false
+RUN if [ "$INSTALL_CUDA" = "true" ]; then \
+    apt-get update && \
     (apt-get install -y cuda-runtime-11-8 || echo "CUDA installation failed, continuing without CUDA") && \
-    rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/*; \
+fi
 
 # Install Love2D and luasocket for mods
 RUN add-apt-repository ppa:bartbes/love-stable -y && \

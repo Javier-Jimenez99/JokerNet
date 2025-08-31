@@ -26,29 +26,29 @@ class AgentState(TypedDict):
     max_recursions: int
 
 def clamp_history(msgs: List[AnyMessage], limit: int) -> List[AnyMessage]:
-    """Mantiene historial completo pero filtra imágenes antiguas (excepto la última)"""
+    """Keep full history but filter out old images (except the last one)."""
     if len(msgs) <= limit:
         return msgs
-    
-    # Separa mensajes con y sin imágenes
+
+    # Separate messages with and without images
     filtered_msgs = []
     last_image_msg = None
-    
+
     for msg in msgs:
         has_image = False
         if hasattr(msg, 'content') and isinstance(msg.content, list):
             has_image = any(item.get('type') == 'image_url' for item in msg.content)
-        
+
         if has_image:
-            last_image_msg = msg  # Mantén solo la última imagen
+            last_image_msg = msg  # Keep only the last image
         else:
-            filtered_msgs.append(msg)  # Mantén todos los mensajes sin imagen
-    
-    # Añade la última imagen al final si existe
+            filtered_msgs.append(msg)  # Keep all messages without images
+
+    # Add the last image at the end if it exists
     if last_image_msg:
         filtered_msgs.append(last_image_msg)
-    
-    # Si aún excede el límite, mantén los más recientes
+
+    # If still exceeds the limit, keep the most recent
     return filtered_msgs[-limit:] if len(filtered_msgs) > limit else filtered_msgs
 
 def descriptions_are_similar(desc1: str, desc2: str) -> bool:
