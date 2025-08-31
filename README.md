@@ -6,7 +6,9 @@
 [![Azure OpenAI](https://img.shields.io/badge/Azure-OpenAI-purple.svg)](https://azure.microsoft.com/en-us/products/ai-services/openai-service/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-> **Transform your Balatro gameplay with Jonernet**
+> **Transform your Balatro gameplay with JokerNet** 🤖✨
+
+![JokerNet screenshot](assets/main_dashboard.png)
 
 JokerNet represents a **foundational framework** for **AI-powered game automation** that can be extended far beyond Balatro. This section outlines potential enhancements and broader applications that demonstrate the **scalability** and **versatility** of the current multiagent architecture. 🤖✨
 
